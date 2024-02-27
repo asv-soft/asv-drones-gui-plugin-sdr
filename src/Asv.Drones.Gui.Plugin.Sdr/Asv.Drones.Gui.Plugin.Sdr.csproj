@@ -42,4 +42,9 @@
         <DependentUpon>RS.resx</DependentUpon>
       </Compile>
     </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Tools\Controls\SdrPayloadBrowserView.axaml" />
+      <AdditionalFiles Include="Tools\Controls\SdrStoreBrowserView.axaml" />
+    </ItemGroup>
 </Project>
