@@ -1,7 +1,7 @@
 @echo off
 rem ====== projects ======
 
-set projects=Asv.Drones.Gui.Plugin.Gbs
+set projects=Asv.Drones.Gui.Plugin.Sdr
 
 rem ====== projects ======
 
