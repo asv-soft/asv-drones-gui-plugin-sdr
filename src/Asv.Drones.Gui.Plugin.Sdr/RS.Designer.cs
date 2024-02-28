@@ -501,6 +501,15 @@ namespace Asv.Drones.Gui.Plugin.Sdr {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Settings.
+        /// </summary>
+        public static string SdrParamsMenu_SdrParamsMenu_Settings {
+            get {
+                return ResourceManager.GetString("SdrParamsMenu_SdrParamsMenu_Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Date.
         /// </summary>
         public static string SdrPayloadBrowserView_Sort_By_Date {

@@ -6,22 +6,22 @@ using Material.Icons;
 namespace Asv.Drones.Gui.Plugin.Sdr;
 
 [Export(nameof(DeviceClass.SdrPayload) ,typeof(IShellMenuItem<IClientDevice>))]
-public class VehicleParamsMenu:ShellMenuItem, IShellMenuItem<IClientDevice>
+public class SdrParamsMenu:ShellMenuItem, IShellMenuItem<IClientDevice>
 {
-    public const string Uri = $"{WellKnownUri.ShellPage}.params-payload";
     
-    public VehicleParamsMenu() : base(Uri)
+    
+    public SdrParamsMenu() : base(SdrParamsViewModel.Uri)
     {
         Icon = MaterialIconDataProvider.GetData(MaterialIconKind.WrenchCog);
         Position = ShellMenuPosition.Top;
         Type = ShellMenuItemType.PageNavigation;
         Order = 100;
-        Name = "Settings";
+        Name = RS.SdrParamsMenu_SdrParamsMenu_Settings;
     }
     
     public IShellMenuItem Init(IClientDevice target)
     {
-        NavigateTo = ParamPageViewModel.GenerateUri(Uri,target.FullId, target.Class);
+        NavigateTo = ParamPageViewModel.GenerateUri(SdrParamsViewModel.Uri,target.FullId, target.Class);
         return this;
     }
 

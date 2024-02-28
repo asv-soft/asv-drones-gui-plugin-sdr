@@ -6,12 +6,13 @@ using Asv.Mavlink;
 
 namespace Asv.Drones.Gui.Plugin.Sdr;
 
-[ExportShellPage($"{WellKnownUri.ShellPage}.params-payload")]
+[ExportShellPage(Uri)]
 public class SdrParamsViewModel:ParamPageViewModel
 {
+    public const string Uri = $"{WellKnownUri.ShellPage}.params-payload";
     [ImportingConstructor]
     public SdrParamsViewModel(IMavlinkDevicesService svc,ILogService log, IConfiguration cfg )
-        :base(WellKnownUri.ShellPageParamsVehicle,svc, log, cfg)
+        :base(Uri,svc, log, cfg)
     {
         
     }
