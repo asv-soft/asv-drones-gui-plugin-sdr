@@ -14,7 +14,7 @@ public class PluginsMarketTreeMenuItem(IConfiguration cfg, ILocalizationService 
     public override string? Name => RS.SdrSettingsViewModel_Header;
     public override string? Description => RS.SdrSettingsViewModel_Description;
     public override MaterialIconKind Icon => SdrIconHelper.DefaultIcon;
-    public override int Order => 255;
+    public override int Order => 500;
     public override ITreePage? CreatePage(ITreePageContext context)
     {
         return new SdrSettingsViewModel(cfg,loc);
