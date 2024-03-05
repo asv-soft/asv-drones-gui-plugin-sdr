@@ -329,4 +329,25 @@
     <data name="SdrParamsMenu_SdrParamsMenu_Settings" xml:space="preserve">
         <value>Параметры</value>
     </data>
+    <data name="SdrSettingsViewModel_DdmLlz" xml:space="preserve">
+        <value>РГМ (Курс)</value>
+    </data>
+    <data name="SdrSettingsViewModel_DdmLlzDescription" xml:space="preserve">
+        <value>Измените текущие единицы измерения РГМ (Курс).</value>
+    </data>
+    <data name="SdrSettingsViewModelDdmGp" xml:space="preserve">
+        <value>РГМ (Глиссада)</value>
+    </data>
+    <data name="SdrSettingsViewModelDdmGpDescription" xml:space="preserve">
+        <value>Измените текущие единицы измерения РГМ (Глиссада).</value>
+    </data>
+    <data name="SdrSettingsViewModelBearing" xml:space="preserve">
+        <value>Азимут</value>
+    </data>
+    <data name="SdrSettingsViewModelBearingDescription" xml:space="preserve">
+        <value>Измените текущие единицы измерения азимута.</value>
+    </data>
+    <data name="SdrSettingsViewModel_MeasureUnits_Title" xml:space="preserve">
+        <value>Единицы измерения</value>
+    </data>
 </root>

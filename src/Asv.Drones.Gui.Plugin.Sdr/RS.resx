@@ -337,4 +337,25 @@
     <data name="SdrParamsMenu_SdrParamsMenu_Settings" xml:space="preserve">
         <value>Settings</value>
     </data>
+    <data name="SdrSettingsViewModel_DdmLlz" xml:space="preserve">
+        <value>DDM Llz</value>
+    </data>
+    <data name="SdrSettingsViewModel_DdmLlzDescription" xml:space="preserve">
+        <value>Change the current measure units of DDM Llz.</value>
+    </data>
+    <data name="SdrSettingsViewModelDdmGp" xml:space="preserve">
+        <value>DDM GP</value>
+    </data>
+    <data name="SdrSettingsViewModelDdmGpDescription" xml:space="preserve">
+        <value>Change the current measure units of DDM GP</value>
+    </data>
+    <data name="SdrSettingsViewModelBearing" xml:space="preserve">
+        <value>Bearing</value>
+    </data>
+    <data name="SdrSettingsViewModelBearingDescription" xml:space="preserve">
+        <value>Change the current measure units of bearing.</value>
+    </data>
+    <data name="SdrSettingsViewModel_MeasureUnits_Title" xml:space="preserve">
+        <value>Measure units</value>
+    </data>
 </root>
