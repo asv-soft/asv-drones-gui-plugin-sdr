@@ -3,6 +3,7 @@ using Asv.Cfg;
 using Asv.Common;
 using Asv.Drones.Gui.Api;
 using DynamicData.Binding;
+using Material.Icons;
 using ReactiveUI.Fody.Helpers;
 
 namespace Asv.Drones.Gui.Plugin.Sdr;
@@ -80,6 +81,24 @@ public class SdrSettingsViewModel : ViewModelBase, ITreePage
                 _cfg.Set(_config);
             })
             .DisposeItWith(Disposable);
+        
+        _loc.DdmLlz.CurrentUnit.Subscribe(v => SelectedDdmLlzUnit = v)
+            .DisposeItWith(Disposable);
+        this.WhenValueChanged(v => v.SelectedDdmLlzUnit,false)
+            .Subscribe(_loc.DdmLlz.CurrentUnit!)
+            .DisposeItWith(Disposable);
+            
+        _loc.DdmGp.CurrentUnit.Subscribe(v => SelectedDdmGpUnit = v)
+            .DisposeItWith(Disposable);
+        this.WhenValueChanged(v => v.SelectedDdmGpUnit,false)
+            .Subscribe(_loc.DdmGp.CurrentUnit!)
+            .DisposeItWith(Disposable);
+        
+        _loc.Bearing.CurrentUnit.Subscribe(v => SelectedBearingUnit = v)
+                     .DisposeItWith(Disposable);
+        this.WhenValueChanged(v => v.SelectedBearingUnit,false)
+            .Subscribe(_loc.Bearing.CurrentUnit!)
+            .DisposeItWith(Disposable);
     }
 
     [Reactive]
@@ -109,4 +128,18 @@ public class SdrSettingsViewModel : ViewModelBase, ITreePage
     [Reactive]
     public string VorChannel { get; set; }
 
+    [Reactive]
+    public IMeasureUnitItem<double,DdmUnits> SelectedDdmLlzUnit { get; set; }
+    public IEnumerable<IMeasureUnitItem<double,DdmUnits>> DdmLlzUnits => _loc.DdmLlz.AvailableUnits;
+        
+    [Reactive]
+    public IMeasureUnitItem<double,DdmUnits> SelectedDdmGpUnit { get; set; }
+    public IEnumerable<IMeasureUnitItem<double,DdmUnits>> DdmGpUnits => _loc.DdmGp.AvailableUnits;
+    
+    [Reactive]
+    public IMeasureUnitItem<double, BearingUnits> SelectedBearingUnit { get; set; }
+    public IEnumerable<IMeasureUnitItem<double, BearingUnits>> BearingUnits => 
+        _loc.Bearing.AvailableUnits;
+    
+    public string AngleIcon => MaterialIconDataProvider.GetData(MaterialIconKind.AngleAcute);
 }

@@ -600,6 +600,24 @@ namespace Asv.Drones.Gui.Plugin.Sdr {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DDM Llz.
+        /// </summary>
+        public static string SdrSettingsViewModel_DdmLlz {
+            get {
+                return ResourceManager.GetString("SdrSettingsViewModel_DdmLlz", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Change the current measure units of DDM Llz..
+        /// </summary>
+        public static string SdrSettingsViewModel_DdmLlzDescription {
+            get {
+                return ResourceManager.GetString("SdrSettingsViewModel_DdmLlzDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Default channels.
         /// </summary>
         public static string SdrSettingsViewModel_DefaultChannels_Title {
@@ -708,6 +726,15 @@ namespace Asv.Drones.Gui.Plugin.Sdr {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Measure units.
+        /// </summary>
+        public static string SdrSettingsViewModel_MeasureUnits_Title {
+            get {
+                return ResourceManager.GetString("SdrSettingsViewModel_MeasureUnits_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to In this section you can configure the default VOR channel..
         /// </summary>
         public static string SdrSettingsViewModel_VorChannel_Description {
@@ -740,6 +767,42 @@ namespace Asv.Drones.Gui.Plugin.Sdr {
         public static string SdrSettingsViewModel_VorFreq_Header {
             get {
                 return ResourceManager.GetString("SdrSettingsViewModel_VorFreq_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bearing.
+        /// </summary>
+        public static string SdrSettingsViewModelBearing {
+            get {
+                return ResourceManager.GetString("SdrSettingsViewModelBearing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Change the current measure units of bearing..
+        /// </summary>
+        public static string SdrSettingsViewModelBearingDescription {
+            get {
+                return ResourceManager.GetString("SdrSettingsViewModelBearingDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DDM GP.
+        /// </summary>
+        public static string SdrSettingsViewModelDdmGp {
+            get {
+                return ResourceManager.GetString("SdrSettingsViewModelDdmGp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Change the current measure units of DDM GP.
+        /// </summary>
+        public static string SdrSettingsViewModelDdmGpDescription {
+            get {
+                return ResourceManager.GetString("SdrSettingsViewModelDdmGpDescription", resourceCulture);
             }
         }
         
