@@ -8,7 +8,7 @@ using ReactiveUI.Fody.Helpers;
 
 namespace Asv.Drones.Gui.Plugin.Sdr;
 
-public class SdrSettingsViewModel : ViewModelBase, ITreePage
+public class SdrSettingsViewModel : TreePageViewModel
 {
     
 
