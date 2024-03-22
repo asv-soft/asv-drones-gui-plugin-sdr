@@ -145,7 +145,8 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
                         break;
                 }
             }).DisposeItWith(Disposable);
-        
+
+        Order = 0;
         Icon = SdrIconHelper.DefaultIcon;
         payload.Name.Subscribe(x=>Title = x).DisposeItWith(Disposable);
         Location = WidgetLocation.Right;
