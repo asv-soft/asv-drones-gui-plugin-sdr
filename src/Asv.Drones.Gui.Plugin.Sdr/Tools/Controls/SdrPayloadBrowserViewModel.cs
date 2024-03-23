@@ -20,11 +20,8 @@ public class SdrPayloadBrowserViewModel:ViewModelBase
     private readonly ILocalizationService _loc;
     private readonly ILogService _log;
     private readonly ReadOnlyObservableCollection<SdrDeviceViewModel> _devices;
-
-
-    public const string UriString = "asv:sdr.device.browser";
-
-    public SdrPayloadBrowserViewModel():base(UriString)
+    
+    public SdrPayloadBrowserViewModel():base(SdrWellKnownUri.SdrDeviceBrowser)
     {
         if (Design.IsDesignMode)
         {
@@ -85,7 +82,7 @@ public class SdrDeviceViewModel:ViewModelBase
     private readonly ILogService _log;
     private readonly ReadOnlyObservableCollection<SdrPayloadRecordViewModel> _items;
 
-    public SdrDeviceViewModel(ushort id):base($"asv:shell.page.sdr-store.device?id={id}")
+    public SdrDeviceViewModel(ushort id):base(SdrWellKnownUri.SdrShellPageSdrStoreDeviceIndex.FormatWith(id))
     {
         Name = $"Payload {id}";
         if (Design.IsDesignMode)

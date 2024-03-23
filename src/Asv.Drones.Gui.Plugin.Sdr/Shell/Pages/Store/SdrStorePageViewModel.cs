@@ -19,7 +19,7 @@ public class SdrStorePageViewModelConfig
     public int DownloadRecordResponseTimeoutMs { get; set; } = 300;
 }
 
-[ExportShellPage(UriString)]
+[ExportShellPage(SdrWellKnownUri.SdrShellPageSdrStore)]
 
 public class SdrStorePageViewModel:ShellPage
 {
@@ -27,12 +27,10 @@ public class SdrStorePageViewModel:ShellPage
     private readonly ILogService _log;
     private readonly ILocalizationService _loc;
     private readonly ISdrStoreService _store;
-    public const string UriString = "asv:shell.page.sdr-store";
-    public static readonly Uri Uri = new (UriString);
     private readonly ReadOnlyObservableCollection<SdrDeviceViewModel> _devices;
     private readonly SdrStorePageViewModelConfig _config;
 
-    public SdrStorePageViewModel() : base(UriString)
+    public SdrStorePageViewModel() : base(SdrWellKnownUri.SdrShellPageSdrStore)
     {
         Title = RS.SdrStorePageViewModel_Title_SDR_Records;
         if (Design.IsDesignMode)

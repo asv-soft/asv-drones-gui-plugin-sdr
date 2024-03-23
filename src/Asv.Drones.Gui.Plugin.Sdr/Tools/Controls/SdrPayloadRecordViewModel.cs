@@ -16,7 +16,7 @@ public class SdrPayloadRecordViewModel:ViewModelBase
     private ReadOnlyObservableCollection<TagViewModel> _tags;
     private readonly IAsvSdrClientEx _sdrClient;
 
-    public SdrPayloadRecordViewModel(Guid id):base($"asv:sdr.device.browser?id{id}")
+    public SdrPayloadRecordViewModel(Guid id):base(SdrWellKnownUri.SdrDeviceBrowserIndex.FormatWith(id))
     {
         _tags = new ReadOnlyObservableCollection<TagViewModel>(new ObservableCollection<TagViewModel>(new List<TagViewModel>
         {

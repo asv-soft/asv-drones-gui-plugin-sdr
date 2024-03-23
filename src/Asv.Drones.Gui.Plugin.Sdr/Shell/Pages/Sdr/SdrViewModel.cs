@@ -14,11 +14,10 @@ using ReactiveUI.Fody.Helpers;
 
 namespace Asv.Drones.Gui.Plugin.Sdr;
 
-[ExportShellPage(UriString)]
+[ExportShellPage(SdrWellKnownUri.SdrShellPageSdr)]
 public class SdrViewModel: ShellPage
 {
-    public const string UriString = "asv:shell.page.sdr";
-    public static Uri GenerateUri(ushort id) => new($"{UriString}?id={id}");
+    public static Uri GenerateUri(ushort id) => new($"{SdrWellKnownUri.SdrShellPageSdr}?id={id}");
    
     private readonly IMavlinkDevicesService _mavlink;
     private readonly ILogService _log;
@@ -29,7 +28,7 @@ public class SdrViewModel: ShellPage
     private ReadOnlyObservableCollection<SdrRecordViewModel> _records;
     private ObservableAsPropertyHelper<bool> _isExecuting;
     
-    public SdrViewModel() : base(UriString)
+    public SdrViewModel() : base(SdrWellKnownUri.SdrShellPageSdr)
     {
         if (Design.IsDesignMode)
         {
@@ -45,7 +44,7 @@ public class SdrViewModel: ShellPage
     }
 
     [ImportingConstructor]
-    public SdrViewModel(IMavlinkDevicesService mavlink, ILogService log, ILocalizationService loc) : base(UriString)
+    public SdrViewModel(IMavlinkDevicesService mavlink, ILogService log, ILocalizationService loc) : base(SdrWellKnownUri.SdrShellPageSdr)
     {
         _mavlink = mavlink ?? throw new ArgumentNullException(nameof(mavlink));
         _log = log ?? throw new ArgumentNullException(nameof(log));
