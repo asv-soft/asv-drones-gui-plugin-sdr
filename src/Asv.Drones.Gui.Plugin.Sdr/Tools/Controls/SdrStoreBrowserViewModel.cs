@@ -9,7 +9,6 @@ namespace Asv.Drones.Gui.Plugin.Sdr;
 
 public class SdrStoreBrowserViewModel:HierarchicalStoreViewModel<Guid,IListDataFile<AsvSdrRecordFileMetadata>>
 {
-    public const string UriString = "asv:sdr.store.browser";
     private readonly ISdrStoreService _svc;
     private readonly ILocalizationService _loc;
     public SdrStoreBrowserViewModel():base()
@@ -19,12 +18,11 @@ public class SdrStoreBrowserViewModel:HierarchicalStoreViewModel<Guid,IListDataF
 
     [ImportingConstructor]
     public SdrStoreBrowserViewModel(ISdrStoreService svc, ILocalizationService loc, ILogService log) : base(
-        new Uri(UriString), svc.Store, log)
+        new Uri(SdrWellKnownUri.SdrDeviceBrowser), svc.Store, log)
     {
         _svc = svc ?? throw new ArgumentNullException(nameof(svc));
         _loc = loc ?? throw new ArgumentNullException(nameof(loc));
     }
-
 
     protected override Guid GenerateNewId()
     {
