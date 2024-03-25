@@ -12,7 +12,7 @@ public class SdrStoreShellMenuItem:ShellMenuItem
     {
         // DONE: Localize
         Name = RS.SdrStoreShellMenuItem_Name;
-        NavigateTo = SdrStorePageViewModel.Uri;
+        NavigateTo = SdrWellKnownUri.SdrShellPageSdrStoreUri;
         Icon = MaterialIconDataProvider.GetData(MaterialIconKind.DatabaseOutline);
         Position = ShellMenuPosition.Top;
         Type = ShellMenuItemType.PageNavigation;

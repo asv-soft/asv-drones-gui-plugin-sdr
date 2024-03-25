@@ -9,12 +9,13 @@ public static class SdrWellKnownUri
     public const string SdrShellPageSdrStoreDeviceIndex = $"{SdrShellPageSdrStore}.device?id={{0}}";
     
     public const string SdrShellPageSdr = $"{WellKnownUri.ShellPage}.sdr";
+    public static readonly Uri SdrShellPageSdrStoreUri = new(SdrShellPageSdrStore);
 
     public const string DesignTime = $"{WellKnownUri.UriScheme}:designTime";
     
     public const string SdrShellPageSdrRec = $"{SdrShellPageSdr}.rec";
     
-    public const string Sdr = $"{WellKnownUri.UriScheme}.sdr";
+    public const string Sdr = $"{WellKnownUri.UriScheme}:sdr";
     
     public const string SdrDevice = $"{Sdr}.device";
 
@@ -22,4 +23,5 @@ public static class SdrWellKnownUri
 
     public const string SdrDeviceBrowserIndex = $"{SdrDeviceBrowser}?id{{0}}";
 
+    
 }
