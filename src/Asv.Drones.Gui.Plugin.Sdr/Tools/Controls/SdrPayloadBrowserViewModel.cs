@@ -39,6 +39,7 @@ public class SdrPayloadBrowserViewModel : ViewModelBase
     {
         _loc = loc;
         _log = log;
+        
         mavlink
             .Payloads
             .Transform(_ => new SdrDeviceViewModel(_, loc, log))
@@ -46,6 +47,7 @@ public class SdrPayloadBrowserViewModel : ViewModelBase
             .DisposeMany()
             .Subscribe()
             .DisposeItWith(Disposable);
+        
         SelectedDevice = _devices.FirstOrDefault();
         
         this.WhenValueChanged(_ => SelectedDevice)
