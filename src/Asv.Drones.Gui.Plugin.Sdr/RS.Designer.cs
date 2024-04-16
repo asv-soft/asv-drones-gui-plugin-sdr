@@ -123,6 +123,24 @@ namespace Asv.Drones.Gui.Plugin.Sdr {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Data thinning.
+        /// </summary>
+        public static string FlightSdrViewModel_DataThinning_Header {
+            get {
+                return ResourceManager.GetString("FlightSdrViewModel_DataThinning_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Frequency of writing to file.
+        /// </summary>
+        public static string FlightSdrViewModel_FileWriteFreq_Header {
+            get {
+                return ResourceManager.GetString("FlightSdrViewModel_FileWriteFreq_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Value must be greater than 0.
         /// </summary>
         public static string FlightSdrViewModel_Frequency_Validation_ErrorMessage {

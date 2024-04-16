@@ -64,26 +64,26 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
     private readonly ObservableCollection<ISdrRttWidget> _rttWidgets = new();
     private readonly IMeasureUnitItem<double,FrequencyUnits> _freqInMHzMeasureUnit;
     private FlightSdrViewModelConfig _config;
-    
+    private readonly IMeasureUnitItem<double, FrequencyUnits> _freqInHzMeasureUnit;
+
     public static Uri GenerateUri(ISdrClientDevice sdr) => FlightSdrWidgetBase.GenerateUri(sdr,"sdr");
 
     public FlightSdrViewModel()
     {
-        if (Design.IsDesignMode)
+        DesignTime.ThrowIfNotDesignMode();
+        
+        Icon = SdrIconHelper.DefaultIcon;
+        _rttWidgets = new ObservableCollection<ISdrRttWidget>(new List<ISdrRttWidget>
         {
-            Icon = SdrIconHelper.DefaultIcon;
-            _rttWidgets = new ObservableCollection<ISdrRttWidget>(new List<ISdrRttWidget>
-            {
-                new LlzSdrRttViewModel(),
-            });
-            ReferencePowerItems = new[]
-            {
-                new ReferencePowerItem("Low signal", -100, false, MaterialIconKind.SignalCellular1),
-                new ReferencePowerItem("Normal", -60, true, MaterialIconKind.SignalCellular2),
-                new ReferencePowerItem("High signal", 0, false, MaterialIconKind.SignalCellular3),
-            };
-            RefPowerSelectedItem = ReferencePowerItems[1];
-        }
+            new LlzSdrRttViewModel(),
+        });
+        ReferencePowerItems = new[]
+        {
+            new ReferencePowerItem("Low signal", -100, false, MaterialIconKind.SignalCellular1),
+            new ReferencePowerItem("Normal", -60, true, MaterialIconKind.SignalCellular2),
+            new ReferencePowerItem("High signal", 0, false, MaterialIconKind.SignalCellular3),
+        };
+        RefPowerSelectedItem = ReferencePowerItems[1];
     }
 
     public FlightSdrViewModel(ISdrClientDevice payload, ILogService log, ILocalizationService loc,
@@ -95,6 +95,7 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
         _loc = loc ?? throw new ArgumentNullException(nameof(loc));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _config = _configuration.Get<FlightSdrViewModelConfig>();
+        _freqInHzMeasureUnit = _loc.Frequency.AvailableUnits.First(_ => _.Id == Api.FrequencyUnits.Hz);
         _freqInMHzMeasureUnit = _loc.Frequency.AvailableUnits.First(_ => _.Id == Api.FrequencyUnits.MHz);
         
         ReferencePowerItems = new[]
@@ -189,7 +190,8 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
             
             _configuration.Set(_config);
                return Payload.Sdr.SetModeAndCheckResult(SelectedMode.Mode,
-                (ulong)Math.Round(_freqInMHzMeasureUnit.ConvertToSi(FrequencyInMhz)), _config.WriteFrequency, _config.ThinningFrequency, refPower, cancel);
+                (ulong)Math.Round(_freqInMHzMeasureUnit.ConvertToSi(FrequencyInMhz)), 
+                _config.WriteFrequency, _config.ThinningFrequency, refPower, cancel);
         });
         UpdateMode.ThrownExceptions.Subscribe(ex =>
         {
@@ -227,15 +229,45 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
             payload.Sdr.SystemControlAction(AsvSdrSystemControlAction.AsvSdrSystemControlActionShutdown, cancel));
         SafeRestartSDRCommand = ReactiveCommand.CreateFromTask(cancel =>
             payload.Sdr.SystemControlAction(AsvSdrSystemControlAction.AsvSdrSystemControlActionRestart, cancel));
-        
+
+        WriteFrequencyInHz = _freqInHzMeasureUnit.FromSiToString(_config.WriteFrequency);
+        ThinningFrequencyInHz = _freqInHzMeasureUnit.FromSiToString(_config.ThinningFrequency);
        
         this.ValidationRule(x => x.FrequencyInMhz,
                 _ => _loc.Frequency.IsValid(_) && _loc.Frequency.ConvertToSi(_) > 0,
                 RS.FlightSdrViewModel_Frequency_Validation_ErrorMessage)
             .DisposeItWith(Disposable);
         
-        _payload.Sdr.Base.Status.Select(_=>_.MissionState)
-            .Subscribe(_=>IsMissionStarted = _ == AsvSdrMissionState.AsvSdrMissionStateProgress)
+        this.ValidationRule(x => x.WriteFrequencyInHz,
+                _ => _loc.Frequency.IsValid(_) && _loc.Frequency.ConvertToSi(_) > 0,
+                RS.FlightSdrViewModel_Frequency_Validation_ErrorMessage)
+            .DisposeItWith(Disposable);
+        
+        this.ValidationRule(x => x.ThinningFrequencyInHz,
+                _ => _loc.Frequency.IsValid(_) && _loc.Frequency.ConvertToSi(_) > 0,
+                RS.FlightSdrViewModel_Frequency_Validation_ErrorMessage)
+            .DisposeItWith(Disposable);
+
+        this.WhenAnyValue(vm => vm.WriteFrequencyInHz)
+            .Subscribe(writeFreq =>
+            {
+                if(!_loc.Frequency.IsValid(writeFreq)) return;
+                
+                _config.WriteFrequency = (float)_freqInHzMeasureUnit.ConvertToSi(writeFreq);
+                _configuration.Set(_config);
+            }).DisposeItWith(Disposable);
+        
+        this.WhenAnyValue(vm => vm.ThinningFrequencyInHz)
+            .Subscribe(thinFreq =>
+            {
+                if(!_loc.Frequency.IsValid(thinFreq)) return;
+
+                _config.ThinningFrequency = (uint)Math.Round(_freqInHzMeasureUnit.ConvertToSi(thinFreq));
+                _configuration.Set(_config);
+            }).DisposeItWith(Disposable);
+        
+        _payload.Sdr.Base.Status.Select(payload=>payload.MissionState)
+            .Subscribe(state => IsMissionStarted = state == AsvSdrMissionState.AsvSdrMissionStateProgress)
             .DisposeItWith(Disposable);
         
         UpdateMission = new CancellableCommandWithProgress<Unit,Unit>(UpdateMissionImpl, "Mission update", log, Scheduler.Default).DisposeItWith(Disposable);
@@ -463,8 +495,16 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
     }
 
     public ObservableCollection<ISdrRttWidget> RttWidgets => _rttWidgets;
-    public string FrequencyUnits => _freqInMHzMeasureUnit.Unit;
+    public string FrequencyInMHzUnits => _freqInMHzMeasureUnit.Unit;
+    public string FrequencyInHzUnits => _freqInHzMeasureUnit.Unit;
     public ObservableCollection<SdrModeViewModel> Modes { get; } = new();
+    
+
+    [Reactive]
+    public string ThinningFrequencyInHz { get; set; }
+    [Reactive]
+    public string WriteFrequencyInHz { get; set; }
+    
     [Reactive]
     public SdrModeViewModel? SelectedMode { get; set; }
     [Reactive]
