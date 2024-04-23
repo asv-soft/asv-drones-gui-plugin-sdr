@@ -4,6 +4,7 @@ using Asv.Common;
 using Asv.Drones.Gui.Api;
 using Asv.Mavlink;
 using Asv.Mavlink.V2.AsvSdr;
+using Avalonia;
 using Avalonia.Controls;
 using ReactiveUI.Fody.Helpers;
 
@@ -19,11 +20,10 @@ public class GpSdrRttViewModel : ViewModelBase, ISdrRttWidget
     
     public GpSdrRttViewModel() : base(new Uri($"fordesigntime://{Guid.NewGuid()}"))
     {
-        if (Design.IsDesignMode)
-        {
+       
             TotalPowerTitle = RS.SdrRttViewModel_SumPower_Title;
             TotalPowerUnits = "dBm";
-            TotalPowerValue = -37.45;
+            TotalPowerValue = 7.45;
             TotalPowerStringValue = "-37.45";
 
             TotalDdmTitle = "DDM 150-90";
@@ -38,23 +38,23 @@ public class GpSdrRttViewModel : ViewModelBase, ISdrRttWidget
             TotalAm90Units = "%";
             TotalAm90StringValue = "20.00";
 
-            TotalAm150Title = RS.LlzSdrRttViewModel_AM_150_Hz_Title;
+            TotalAm150Title = RS.LlzSdrRttViewModel_AM_150_Hz_Title + TotalAm150Units;
             TotalAm150Units = "%";
             TotalAm150StringValue = "20.00";
 
-            Phi90Title = "PHI 90";
+            Phi90Title = "PHI 90"+ Phi90Units;
             Phi90Units = "°";
             Phi90StringValue = "0.01";
         
-            Phi150Title = "PHI 150";
+            Phi150Title = "PHI 150"+ Phi150Units;
             Phi150Units = "°";
             Phi150StringValue = "0.02";
 
-            TotalFreq90Title = RS.LlzSdrRttViewModel_Freq_90_Hz_Title;
+            TotalFreq90Title = RS.LlzSdrRttViewModel_Freq_90_Hz_Title+ TotalFreq90Units;
             TotalFreq90Units = "Hz";
             TotalFreq90StringValue = "90.00";
         
-            TotalFreq150Title = RS.LlzSdrRttViewModel_Freq_150_Hz_Title;
+            TotalFreq150Title = RS.LlzSdrRttViewModel_Freq_150_Hz_Title + TotalFreq150Units;
             TotalFreq150Units = "Hz";
             TotalFreq150StringValue = "150.00";
             
@@ -109,12 +109,12 @@ public class GpSdrRttViewModel : ViewModelBase, ISdrRttWidget
             ClrFrequencyTitle = "";
             ClrFrequencyUnits = "kHz";
             ClrFrequencyStringValue = "-8.000";
-        }
     }
     
     public GpSdrRttViewModel(ISdrClientDevice payload, ILogService log, ILocalizationService loc, IConfiguration configuration)
         :base(FlightSdrWidgetBase.GenerateUri(payload, "sdr/gp"))
     {
+        
         _logService = log ?? throw new ArgumentNullException(nameof(log));
         _loc = loc ?? throw new ArgumentNullException(nameof(loc));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -386,6 +386,8 @@ public class GpSdrRttViewModel : ViewModelBase, ISdrRttWidget
     // CRS
     
     #region Crs Power
+    [Reactive]
+    public Point CrsPowerProgressPoint { get; set; } = new (50, 2.5);
 
     [Reactive]
     public string CrsPowerTitle { get; set; }
@@ -470,6 +472,9 @@ public class GpSdrRttViewModel : ViewModelBase, ISdrRttWidget
     // CLR
     
     #region Clr Power
+
+    [Reactive] public Point ClrPowerProgressRightPoint { get; set; } = new (120, 2.5);
+    [Reactive] public Point ClrPowerProgressLeftPoint { get; set; } = new (80, 2.5);
 
     [Reactive]
     public string ClrPowerTitle { get; set; }

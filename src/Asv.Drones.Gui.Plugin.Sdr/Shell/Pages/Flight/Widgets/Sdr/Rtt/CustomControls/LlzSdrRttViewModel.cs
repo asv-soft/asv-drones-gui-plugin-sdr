@@ -4,6 +4,7 @@ using Asv.Common;
 using Asv.Drones.Gui.Api;
 using Asv.Mavlink;
 using Asv.Mavlink.V2.AsvSdr;
+using Avalonia;
 using Avalonia.Controls;
 using ReactiveUI.Fody.Helpers;
 
@@ -134,6 +135,8 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
     public LlzSdrRttViewModel(ISdrClientDevice payload, ILogService log, ILocalizationService loc, IConfiguration configuration)
         :base(FlightSdrWidgetBase.GenerateUri(payload, "sdr/llz"))
     {
+        ClrPowerProgressRightPoint = new Point(120, 2.5);
+        ClrPowerProgressLeftPoint = new Point(80, 2.5);
         _logService = log ?? throw new ArgumentNullException(nameof(log));
         _loc = loc ?? throw new ArgumentNullException(nameof(loc));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -298,6 +301,11 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
             .DisposeItWith(Disposable);
     }
 
+    [Reactive]
+    public Point ClrPowerProgressRightPoint { get; set; }
+    [Reactive]
+    public Point ClrPowerProgressLeftPoint { get; set; }
+    
     
     #region Main Frequency
     
