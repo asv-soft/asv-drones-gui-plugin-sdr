@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using Asv.Avalonia.Toolkit.UI.Controls.Indicators;
 using Asv.Cfg;
 using Asv.Common;
 using Asv.Drones.Gui.Api;
@@ -6,6 +7,7 @@ using Asv.Mavlink;
 using Asv.Mavlink.V2.AsvSdr;
 using Avalonia;
 using Avalonia.Controls;
+using DynamicData.Binding;
 using ReactiveUI.Fody.Helpers;
 
 namespace Asv.Drones.Gui.Plugin.Sdr.Rtt.CustomControls;
@@ -226,6 +228,11 @@ public class GpSdrRttViewModel : ViewModelBase, ISdrRttWidget
             Phi150Units = _.Unit;
         }).DisposeItWith(Disposable);
         
+        this.WhenValueChanged(vm => vm.TotalSdmValue).Subscribe(_ =>
+        {
+            TotalSdmStatus = _loc.Sdm.ConvertFromSi(_) < 75 ? IndicatorStatusEnum.Critical : IndicatorStatusEnum.Success;
+        });
+        
         payload.Sdr.Base.OnRecordData.Where(_ => _.MessageId == AsvSdrRecordDataGpPacket.PacketMessageId)
             .Cast<AsvSdrRecordDataGpPacket>()
             .Subscribe(_=>
@@ -259,6 +266,12 @@ public class GpSdrRttViewModel : ViewModelBase, ISdrRttWidget
             })
             .DisposeItWith(Disposable);
     }
+    
+    [Reactive]
+    public double TotalSdmValue { get; set; }
+    [Reactive]
+    public IndicatorStatusEnum TotalSdmStatus { get; set; }
+
     
      #region Total Power
 

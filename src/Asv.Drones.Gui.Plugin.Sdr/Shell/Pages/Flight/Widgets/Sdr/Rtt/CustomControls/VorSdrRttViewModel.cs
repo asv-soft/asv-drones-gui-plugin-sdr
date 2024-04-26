@@ -114,8 +114,8 @@ public class VorSdrRttViewModel : ViewModelBase, ISdrRttWidget
         
         PowerTitle = RS.VorSdrRttViewModelPowerTitle;
         PowerUnits = _loc.Power.CurrentUnit.Value.Unit;
-
-        FrequencyOffsetTitle = "";
+    
+        FrequencyOffsetTitle = "Frequency offset";
         FrequencyOffsetUnits = _freqInKHzMeasureUnit?.Unit;
 
         BearingTitle = RS.VorSdrRttViewModelBearingTitle;
@@ -129,7 +129,7 @@ public class VorSdrRttViewModel : ViewModelBase, ISdrRttWidget
 
         FmDeviationTitle = RS.VorSdrRttViewModelFMDeviationTitle;
         FmDeviationUnits = _freqInHzMeasureUnit?.Unit;
-        
+        //TODO: Localize
         IdCodeTitle = RS.SdrRttViewModel_ID_Code_Title;
 
         VoiceAmTitle = RS.VorSdrRttViewModelVoiceAmTitle;
@@ -145,7 +145,7 @@ public class VorSdrRttViewModel : ViewModelBase, ISdrRttWidget
         FreqFm30Units = _freqInHzMeasureUnit?.Unit;
 
         FmIndexTitle = RS.VorSdrRttViewModelFMIndexTitle;
-
+        
         _loc.Bearing.CurrentUnit
             .Subscribe(_ => BearingUnits = _.Unit)
             .DisposeItWith(Disposable);
