@@ -123,6 +123,15 @@ namespace Asv.Drones.Gui.Plugin.Sdr {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Record: .
+        /// </summary>
+        public static string FlightSdrViewModel_CurrentRecordName {
+            get {
+                return ResourceManager.GetString("FlightSdrViewModel_CurrentRecordName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Data thinning.
         /// </summary>
         public static string FlightSdrViewModel_DataThinning_Header {

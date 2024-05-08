@@ -356,4 +356,7 @@
     <data name="FlightSdrViewModel_DataThinning_Header" xml:space="preserve">
         <value>Прореживание данных</value>
     </data>
+    <data name="FlightSdrViewModel_CurrentRecordName" xml:space="preserve">
+        <value>Запись: </value>
+    </data>
 </root>

@@ -364,4 +364,7 @@
     <data name="FlightSdrViewModel_FileWriteFreq_Header" xml:space="preserve">
         <value>Frequency of writing to file</value>
     </data>
+    <data name="FlightSdrViewModel_CurrentRecordName" xml:space="preserve">
+        <value>Record: </value>
+    </data>
 </root>

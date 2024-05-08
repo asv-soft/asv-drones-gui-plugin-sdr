@@ -208,7 +208,11 @@ public class FlightSdrViewModel : FlightSdrWidgetBase
                 RS.FlightSdrViewModel_StartRecord_Error_Message, ex);
         }).DisposeItWith(Disposable);
 
-        StopRecord = ReactiveCommand.CreateFromTask(cancel => Payload.Sdr.StopRecordAndCheckResult(cancel),
+        StopRecord = ReactiveCommand.CreateFromTask(cancel =>
+            {
+                CurrentRecordName = string.Empty;
+                return Payload.Sdr.StopRecordAndCheckResult(cancel);
+            },
             this.WhenAnyValue(_ => _.IsRecordStarted));
         StopRecord.ThrownExceptions.Subscribe(ex =>
         {
@@ -383,8 +387,7 @@ public class FlightSdrViewModel : FlightSdrWidgetBase
                 startMavResult = await Payload.Sdr.StartRecord(viewModel.RecordName, cancel);
                 if (startMavResult == MavResult.MavResultAccepted)
                 {
-                    CurrentRecordName = $"Record: {viewModel.RecordName}";
-                    break;
+                    CurrentRecordName = $"{RS.FlightSdrViewModel_CurrentRecordName + viewModel.RecordName}";
                 }
                 if (cancel.IsCancellationRequested) break;
             }
@@ -524,8 +527,7 @@ public class FlightSdrViewModel : FlightSdrWidgetBase
     public string FrequencyInMHzUnits => _freqInMHzMeasureUnit.Unit;
     public string FrequencyInHzUnits => _freqInHzMeasureUnit.Unit;
     public ObservableCollection<SdrModeViewModel> Modes { get; } = new();
-
-    [Reactive] public string CurrentRecordName { get; set; }
+[Reactive] public string CurrentRecordName { get; set; }
     [Reactive] public string ThinningFrequencyInHz { get; set; }
     [Reactive] public string WriteFrequencyInHz { get; set; }
 
