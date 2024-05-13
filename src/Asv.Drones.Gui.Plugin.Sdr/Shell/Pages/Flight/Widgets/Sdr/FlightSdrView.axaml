@@ -33,8 +33,8 @@
                                     <avalonia:MaterialIcon Kind="Cog" Width="25" Height="25" />
                                     <TextBlock FontSize="20" Text="SDR optional settings" />
                                 </StackPanel>
-                                <TextBox UseFloatingWatermark="True" 
-                                         Watermark="{x:Static sdr:RS.FlightSdrViewModel_FileWriteFreq_Header}" 
+                                <TextBox UseFloatingWatermark="True"
+                                         Watermark="{x:Static sdr:RS.FlightSdrViewModel_FileWriteFreq_Header}"
                                          Text="{CompiledBinding WriteFrequencyInHz}">
                                     <TextBox.InnerLeftContent>
                                         <avalonia:MaterialIcon Margin="8 0 0 0" Kind="Pen" />
@@ -45,8 +45,8 @@
                                                    Margin="4" />
                                     </TextBox.InnerRightContent>
                                 </TextBox>
-                                <TextBox UseFloatingWatermark="True" 
-                                         Watermark="{x:Static sdr:RS.FlightSdrViewModel_DataThinning_Header}" 
+                                <TextBox UseFloatingWatermark="True"
+                                         Watermark="{x:Static sdr:RS.FlightSdrViewModel_DataThinning_Header}"
                                          Text="{CompiledBinding ThinningFrequencyInHz}">
                                     <TextBox.InnerLeftContent>
                                         <avalonia:MaterialIcon Margin="8 0 0 0" Kind="Filter" />
@@ -114,10 +114,12 @@
                         </MenuFlyout>
                     </DropDownButton.Flyout>
                 </DropDownButton>
-
-                <linkQuality:LinkQualitySdrRttView DataContext="{CompiledBinding LinkQuality}" DockPanel.Dock="Left"
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                <linkQuality:LinkQualitySdrRttView DataContext="{CompiledBinding LinkQuality}"
                                                    Padding="3" BorderBrush="Transparent" BorderThickness="0"
                                                    Background="Transparent" />
+                <TextBlock Text="{Binding CurrentRecordName}" Padding="3 7 3 3 " Background="Transparent" />
+                </StackPanel>
             </DockPanel>
             <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Modes}"
                       SelectedItem="{Binding SelectedMode, Mode=TwoWay}">
