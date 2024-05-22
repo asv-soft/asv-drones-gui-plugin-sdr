@@ -40,7 +40,7 @@ public class FlightSdrViewModelConfig
 
 public class ReferencePowerItem
 {
-    public ReferencePowerItem(string name, float power, bool isDefault,MaterialIconKind icon)
+    public ReferencePowerItem(string name, float power, bool isDefault, MaterialIconKind icon)
     {
         Name = name;
         Power = power;
@@ -54,7 +54,7 @@ public class ReferencePowerItem
     public bool IsDefault { get; set; }
 }
 
-public class FlightSdrViewModel:FlightSdrWidgetBase
+public class FlightSdrViewModel : FlightSdrWidgetBase
 {
     private readonly ISdrClientDevice _payload;
     private readonly ILogService _logService;
@@ -62,28 +62,28 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
     private readonly IConfiguration _configuration;
     private readonly ISdrRttWidgetProvider[] _providers;
     private readonly ObservableCollection<ISdrRttWidget> _rttWidgets = new();
-    private readonly IMeasureUnitItem<double,FrequencyUnits> _freqInMHzMeasureUnit;
+    private readonly IMeasureUnitItem<double, FrequencyUnits> _freqInMHzMeasureUnit;
     private FlightSdrViewModelConfig _config;
-    
-    public static Uri GenerateUri(ISdrClientDevice sdr) => FlightSdrWidgetBase.GenerateUri(sdr,"sdr");
+    private readonly IMeasureUnitItem<double, FrequencyUnits> _freqInHzMeasureUnit;
+
+    public static Uri GenerateUri(ISdrClientDevice sdr) => FlightSdrWidgetBase.GenerateUri(sdr, "sdr");
 
     public FlightSdrViewModel()
     {
-        if (Design.IsDesignMode)
+        DesignTime.ThrowIfNotDesignMode();
+
+        Icon = SdrIconHelper.DefaultIcon;
+        _rttWidgets = new ObservableCollection<ISdrRttWidget>(new List<ISdrRttWidget>
         {
-            Icon = SdrIconHelper.DefaultIcon;
-            _rttWidgets = new ObservableCollection<ISdrRttWidget>(new List<ISdrRttWidget>
-            {
-                new LlzSdrRttViewModel(),
-            });
-            ReferencePowerItems = new[]
-            {
-                new ReferencePowerItem("Low signal", -100, false, MaterialIconKind.SignalCellular1),
-                new ReferencePowerItem("Normal", -60, true, MaterialIconKind.SignalCellular2),
-                new ReferencePowerItem("High signal", 0, false, MaterialIconKind.SignalCellular3),
-            };
-            RefPowerSelectedItem = ReferencePowerItems[1];
-        }
+            new LlzSdrRttViewModel(),
+        });
+        ReferencePowerItems = new[]
+        {
+            new ReferencePowerItem("Low signal", -100, false, MaterialIconKind.SignalCellular1),
+            new ReferencePowerItem("Normal", -60, true, MaterialIconKind.SignalCellular2),
+            new ReferencePowerItem("High signal", 0, false, MaterialIconKind.SignalCellular3),
+        };
+        RefPowerSelectedItem = ReferencePowerItems[1];
     }
 
     public FlightSdrViewModel(ISdrClientDevice payload, ILogService log, ILocalizationService loc,
@@ -95,8 +95,9 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
         _loc = loc ?? throw new ArgumentNullException(nameof(loc));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _config = _configuration.Get<FlightSdrViewModelConfig>();
+        _freqInHzMeasureUnit = _loc.Frequency.AvailableUnits.First(_ => _.Id == Api.FrequencyUnits.Hz);
         _freqInMHzMeasureUnit = _loc.Frequency.AvailableUnits.First(_ => _.Id == Api.FrequencyUnits.MHz);
-        
+
         ReferencePowerItems = new[]
         {
             new ReferencePowerItem("Low signal", -100, false, MaterialIconKind.SignalCellular1),
@@ -104,22 +105,22 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
             new ReferencePowerItem("High signal", 0, false, MaterialIconKind.SignalCellular3),
         };
         RefPowerSelectedItem = ReferencePowerItems[1];
-        
-        payload.Sdr.Base.Status.Select(_=>_.RefPower)
+
+        payload.Sdr.Base.Status.Select(_ => _.RefPower)
             .DistinctUntilChanged()
-            .Where(x=>!float.IsNaN(x))
-            .Subscribe(x=>RefPowerSelectedItem = ReferencePowerItems.MinItem(t=>t.Power - x))
+            .Where(x => !float.IsNaN(x))
+            .Subscribe(x => RefPowerSelectedItem = ReferencePowerItems.MinItem(t => t.Power - x))
             .DisposeItWith(Disposable);
-        payload.Sdr.Base.Status.Select(_=>_.SignalOverflow)
+        payload.Sdr.Base.Status.Select(_ => _.SignalOverflow)
             .DistinctUntilChanged()
-            .Where(x=>!float.IsNaN(x))
-            .Subscribe(x=>
+            .Where(x => !float.IsNaN(x))
+            .Subscribe(x =>
             {
                 SignalOverflowValue = x;
                 IsSignalOverflow = x > 0.8;
             })
             .DisposeItWith(Disposable);
-        
+
         this.WhenValueChanged(_ => _.SelectedMode)
             .Subscribe(SelectedModeChanged).DisposeItWith(Disposable);
 
@@ -148,7 +149,7 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
 
         Order = 0;
         Icon = SdrIconHelper.DefaultIcon;
-        payload.Name.Subscribe(x=>Title = x).DisposeItWith(Disposable);
+        payload.Name.Subscribe(x => Title = x).DisposeItWith(Disposable);
         Location = WidgetLocation.Right;
 
         payload.Sdr.SupportedModes.DistinctUntilChanged()
@@ -158,56 +159,65 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
             .Subscribe(UpdateSelectedMode)
             .DisposeItWith(Disposable);
         payload.Sdr.IsRecordStarted.DistinctUntilChanged()
-            .Subscribe(x=>IsRecordStarted = x)
+            .Subscribe(x => IsRecordStarted = x)
             .DisposeItWith(Disposable);
-        
+
         UpdateMode = ReactiveCommand.CreateFromTask(cancel =>
         {
             if (SelectedMode == null) return Task.CompletedTask;
             switch (SelectedMode.Mode)
             {
-                case AsvSdrCustomMode.AsvSdrCustomModeGp: 
+                case AsvSdrCustomMode.AsvSdrCustomModeGp:
                     _config.GpFrequencyInMhz = FrequencyInMhz;
                     break;
                 case AsvSdrCustomMode.AsvSdrCustomModeLlz:
                     _config.LlzChannel = Channel;
                     _config.LlzFrequencyInMhz = FrequencyInMhz;
                     break;
-                case AsvSdrCustomMode.AsvSdrCustomModeVor: 
+                case AsvSdrCustomMode.AsvSdrCustomModeVor:
                     _config.VorChannel = Channel;
                     _config.VorFrequencyInMhz = FrequencyInMhz;
                     break;
-                case AsvSdrCustomMode.AsvSdrCustomModeIdle: default:
+                case AsvSdrCustomMode.AsvSdrCustomModeIdle:
+                default:
                     break;
             }
-            
+
             var refPower = -60.0f;
-            if (RefPowerSelectedItem!= null)
+            if (RefPowerSelectedItem != null)
             {
                 refPower = RefPowerSelectedItem.Power;
             }
-            
+
             _configuration.Set(_config);
-               return Payload.Sdr.SetModeAndCheckResult(SelectedMode.Mode,
-                (ulong)Math.Round(_freqInMHzMeasureUnit.ConvertToSi(FrequencyInMhz)), _config.WriteFrequency, _config.ThinningFrequency, refPower, cancel);
+            return Payload.Sdr.SetModeAndCheckResult(SelectedMode.Mode,
+                (ulong)Math.Round(_freqInMHzMeasureUnit.ConvertToSi(FrequencyInMhz)),
+                _config.WriteFrequency, _config.ThinningFrequency, refPower, cancel);
         });
         UpdateMode.ThrownExceptions.Subscribe(ex =>
         {
-            _logService.Error(RS.FlightSdrViewModel_UpdateMode_Error_Sender,RS.FlightSdrViewModel_UpdateMode_Error_Message,ex);
+            _logService.Error(RS.FlightSdrViewModel_UpdateMode_Error_Sender,
+                RS.FlightSdrViewModel_UpdateMode_Error_Message, ex);
         }).DisposeItWith(Disposable);
-        
+
         StartRecord = ReactiveCommand.CreateFromTask(RecordStartImpl,
-            this.WhenAnyValue(_=>_.IsRecordStarted).Select(_=>!_));
+            this.WhenAnyValue(_ => _.IsRecordStarted).Select(_ => !_));
         StartRecord.ThrownExceptions.Subscribe(ex =>
         {
-            _logService.Error(RS.FlightSdrViewModel_StartRecord_Error_Sender,RS.FlightSdrViewModel_StartRecord_Error_Message,ex);
+            _logService.Error(RS.FlightSdrViewModel_StartRecord_Error_Sender,
+                RS.FlightSdrViewModel_StartRecord_Error_Message, ex);
         }).DisposeItWith(Disposable);
-        
-        StopRecord = ReactiveCommand.CreateFromTask(cancel=>Payload.Sdr.StopRecordAndCheckResult(cancel),
-            this.WhenAnyValue(_=>_.IsRecordStarted));
+
+        StopRecord = ReactiveCommand.CreateFromTask(cancel =>
+            {
+                CurrentRecordName = string.Empty;
+                return Payload.Sdr.StopRecordAndCheckResult(cancel);
+            },
+            this.WhenAnyValue(_ => _.IsRecordStarted));
         StopRecord.ThrownExceptions.Subscribe(ex =>
         {
-            _logService.Error(RS.FlightSdrViewModel_StopRecord_Error_Sender,RS.FlightSdrViewModel_StopRecord_Error_Message,ex);
+            _logService.Error(RS.FlightSdrViewModel_StopRecord_Error_Sender,
+                RS.FlightSdrViewModel_StopRecord_Error_Message, ex);
         }).DisposeItWith(Disposable);
 
         Disposable.AddAction(() =>
@@ -216,70 +226,104 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
             {
                 item.Dispose();
             }
+
             _rttWidgets.Clear();
         });
-        
+
         LinkQuality = new LinkQualitySdrRttViewModel(payload);
-        
+
         SafeRebootOSCommand = ReactiveCommand.CreateFromTask(cancel =>
             payload.Sdr.SystemControlAction(AsvSdrSystemControlAction.AsvSdrSystemControlActionReboot, cancel));
         SafeShutdownOSCommand = ReactiveCommand.CreateFromTask(cancel =>
             payload.Sdr.SystemControlAction(AsvSdrSystemControlAction.AsvSdrSystemControlActionShutdown, cancel));
         SafeRestartSDRCommand = ReactiveCommand.CreateFromTask(cancel =>
             payload.Sdr.SystemControlAction(AsvSdrSystemControlAction.AsvSdrSystemControlActionRestart, cancel));
-        
-       
+
+        WriteFrequencyInHz = _freqInHzMeasureUnit.FromSiToString(_config.WriteFrequency);
+        ThinningFrequencyInHz = _freqInHzMeasureUnit.FromSiToString(_config.ThinningFrequency);
+
         this.ValidationRule(x => x.FrequencyInMhz,
                 _ => _loc.Frequency.IsValid(_) && _loc.Frequency.ConvertToSi(_) > 0,
                 RS.FlightSdrViewModel_Frequency_Validation_ErrorMessage)
             .DisposeItWith(Disposable);
-        
-        _payload.Sdr.Base.Status.Select(_=>_.MissionState)
-            .Subscribe(_=>IsMissionStarted = _ == AsvSdrMissionState.AsvSdrMissionStateProgress)
+
+        this.ValidationRule(x => x.WriteFrequencyInHz,
+                _ => _loc.Frequency.IsValid(_) && _loc.Frequency.ConvertToSi(_) > 0,
+                RS.FlightSdrViewModel_Frequency_Validation_ErrorMessage)
             .DisposeItWith(Disposable);
-        
-        UpdateMission = new CancellableCommandWithProgress<Unit,Unit>(UpdateMissionImpl, "Mission update", log, Scheduler.Default).DisposeItWith(Disposable);
 
-        StartMission = ReactiveCommand.CreateFromTask<Unit,Unit>(StartMissionImpl);
-        StartMission.ThrownExceptions.Subscribe(_=>_logService.Error(Title, "Start mission failed", _)).DisposeItWith(Disposable);
-        StopMission = ReactiveCommand.CreateFromTask<Unit,Unit>(StopMissionImpl);
-        StopMission.ThrownExceptions.Subscribe(_=>_logService.Error(Title, "Stop mission failed", _)).DisposeItWith(Disposable);
+        this.ValidationRule(x => x.ThinningFrequencyInHz,
+                _ => _loc.Frequency.IsValid(_) && _loc.Frequency.ConvertToSi(_) > 0,
+                RS.FlightSdrViewModel_Frequency_Validation_ErrorMessage)
+            .DisposeItWith(Disposable);
+
+        this.WhenAnyValue(vm => vm.WriteFrequencyInHz)
+            .Subscribe(writeFreq =>
+            {
+                if (!_loc.Frequency.IsValid(writeFreq)) return;
+
+                _config.WriteFrequency = (float)_freqInHzMeasureUnit.ConvertToSi(writeFreq);
+                _configuration.Set(_config);
+            }).DisposeItWith(Disposable);
+
+        this.WhenAnyValue(vm => vm.ThinningFrequencyInHz)
+            .Subscribe(thinFreq =>
+            {
+                if (!_loc.Frequency.IsValid(thinFreq)) return;
+
+                _config.ThinningFrequency = (uint)Math.Round(_freqInHzMeasureUnit.ConvertToSi(thinFreq));
+                _configuration.Set(_config);
+            }).DisposeItWith(Disposable);
+
+        _payload.Sdr.Base.Status.Select(payload => payload.MissionState)
+            .Subscribe(state => IsMissionStarted = state == AsvSdrMissionState.AsvSdrMissionStateProgress)
+            .DisposeItWith(Disposable);
+
+        UpdateMission =
+            new CancellableCommandWithProgress<Unit, Unit>(UpdateMissionImpl, "Mission update", log, Scheduler.Default)
+                .DisposeItWith(Disposable);
+
+        StartMission = ReactiveCommand.CreateFromTask<Unit, Unit>(StartMissionImpl);
+        StartMission.ThrownExceptions.Subscribe(_ => _logService.Error(Title, "Start mission failed", _))
+            .DisposeItWith(Disposable);
+        StopMission = ReactiveCommand.CreateFromTask<Unit, Unit>(StopMissionImpl);
+        StopMission.ThrownExceptions.Subscribe(_ => _logService.Error(Title, "Stop mission failed", _))
+            .DisposeItWith(Disposable);
     }
-
-   
 
 
     #region Mission
 
-    public ReactiveCommand<Unit,Unit> StartMission { get; }
+    public ReactiveCommand<Unit, Unit> StartMission { get; }
 
     private async Task<Unit> StartMissionImpl(Unit args, CancellationToken cancel)
     {
         await _payload.Sdr.StartMission(0, cancel);
         return Unit.Default;
     }
-    public ReactiveCommand<Unit,Unit> StopMission { get; }
+
+    public ReactiveCommand<Unit, Unit> StopMission { get; }
+
     private async Task<Unit> StopMissionImpl(Unit args, CancellationToken cancel)
     {
         await _payload.Sdr.StopMission(cancel);
         return Unit.Default;
     }
+
     private async Task<Unit> UpdateMissionImpl(Unit arg, IProgress<double> progress, CancellationToken cancel)
     {
         MissionStatusText = "Loading mission...";
         var items = await _payload.Missions.Download(cancel);
         return Unit.Default;
-    }   
+    }
 
-  
-    public CancellableCommandWithProgress<Unit,Unit> UpdateMission { get; }
-    [Reactive]
-    public string MissionStatusText { get; set; }
-    [Reactive]
-    public bool IsMissionStarted { get; set; }
+
+    public CancellableCommandWithProgress<Unit, Unit> UpdateMission { get; }
+    [Reactive] public string MissionStatusText { get; set; }
+    [Reactive] public bool IsMissionStarted { get; set; }
 
     #endregion
-    
+
     private void SelectedModeChanged(SdrModeViewModel? _)
     {
         if (_ == null) return;
@@ -289,7 +333,7 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
                 FrequencyInMhz = _config.GpFrequencyInMhz;
                 IsIdleMode = false;
                 IsGpMode = true;
-                
+
                 break;
             case AsvSdrCustomMode.AsvSdrCustomModeLlz:
                 Channels = SdrRttHelper.GetLlzChannels();
@@ -313,6 +357,7 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
                 break;
         }
     }
+
     private async Task RecordStartImpl(CancellationToken cancel)
     {
         var dialog = new ContentDialog()
@@ -322,13 +367,14 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
             IsSecondaryButtonEnabled = true,
             SecondaryButtonText = RS.FlightSdrViewModel_RecordStartDialog_SecondaryButton_Name
         };
-            
+
         var viewModel = new RecordStartViewModel(Payload);
-        
-        viewModel.RecordName = $"{Modes.First(_ => _.Mode == Payload.Sdr.CustomMode.Value).Name}_{DateTime.Now:yy_MM_dd_hh_mm}";
-        
+
+        viewModel.RecordName =
+            $"{Modes.First(_ => _.Mode == Payload.Sdr.CustomMode.Value).Name}_{DateTime.Now:yy_MM_dd_hh_mm}";
+
         viewModel.ApplyDialog(dialog);
-            
+
         dialog.Content = viewModel;
 
         var result = await dialog.ShowAsync();
@@ -339,83 +385,92 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
             for (int i = 0; i < 5; i++)
             {
                 startMavResult = await Payload.Sdr.StartRecord(viewModel.RecordName, cancel);
-                if (cancel.IsCancellationRequested || startMavResult == MavResult.MavResultAccepted) break;
+                if (startMavResult == MavResult.MavResultAccepted)
+                {
+                    CurrentRecordName = $"{RS.FlightSdrViewModel_CurrentRecordName + viewModel.RecordName}";
+                }
+                if (cancel.IsCancellationRequested) break;
             }
-            
+
             var tagMavResult = MavResult.MavResultUnsupported;
-            
+
             for (int i = 0; i < 5; i++)
             {
-                tagMavResult = await Payload.Sdr.CurrentRecordSetTag("Kit", 
+                tagMavResult = await Payload.Sdr.CurrentRecordSetTag("Kit",
                     viewModel.SelectedKit, cancel).ConfigureAwait(false);
                 if (cancel.IsCancellationRequested || tagMavResult == MavResult.MavResultAccepted) break;
             }
-            
+
             tagMavResult = MavResult.MavResultUnsupported;
-            
+
             for (int i = 0; i < 5; i++)
             {
-                tagMavResult = await Payload.Sdr.CurrentRecordSetTag("Mission", 
+                tagMavResult = await Payload.Sdr.CurrentRecordSetTag("Mission",
                     viewModel.SelectedMission, cancel).ConfigureAwait(false);
                 if (cancel.IsCancellationRequested || tagMavResult == MavResult.MavResultAccepted) break;
             }
 
             if (cancel.IsCancellationRequested) return;
-            
+
             if (startMavResult == MavResult.MavResultAccepted)
             {
                 foreach (var tag in viewModel.Tags)
                 {
                     tagMavResult = MavResult.MavResultUnsupported;
-                    
+
                     if (tag is LongTagViewModel longTag)
                     {
                         for (int i = 0; i < 5; i++)
                         {
-                            tagMavResult = await Payload.Sdr.CurrentRecordSetTag(longTag.Name, 
+                            tagMavResult = await Payload.Sdr.CurrentRecordSetTag(longTag.Name,
                                 longTag.Value, cancel).ConfigureAwait(false);
                             if (cancel.IsCancellationRequested || tagMavResult == MavResult.MavResultAccepted) break;
                         }
+
                         if (!cancel.IsCancellationRequested && tagMavResult != MavResult.MavResultAccepted)
-                            _logService.Error(Title, 
+                            _logService.Error(Title,
                                 $"Long tag {longTag.Name} setup failed. Result: {tagMavResult}");
                     }
                     else if (tag is ULongTagViewModel ulongTag)
                     {
                         for (int i = 0; i < 5; i++)
                         {
-                            tagMavResult = await Payload.Sdr.CurrentRecordSetTag(ulongTag.Name, 
+                            tagMavResult = await Payload.Sdr.CurrentRecordSetTag(ulongTag.Name,
                                 ulongTag.Value, cancel).ConfigureAwait(false);
                             if (cancel.IsCancellationRequested || tagMavResult == MavResult.MavResultAccepted) break;
                         }
+
                         if (!cancel.IsCancellationRequested && tagMavResult != MavResult.MavResultAccepted)
-                            _logService.Error(Title, 
+                            _logService.Error(Title,
                                 $"ULong tag {ulongTag.Name} setup failed. Result: {tagMavResult}");
                     }
                     else if (tag is DoubleTagViewModel doubleTag)
                     {
                         for (int i = 0; i < 5; i++)
                         {
-                            tagMavResult = await Payload.Sdr.CurrentRecordSetTag(doubleTag.Name, 
+                            tagMavResult = await Payload.Sdr.CurrentRecordSetTag(doubleTag.Name,
                                 doubleTag.Value, cancel).ConfigureAwait(false);
                             if (cancel.IsCancellationRequested || tagMavResult == MavResult.MavResultAccepted) break;
                         }
+
                         if (!cancel.IsCancellationRequested && tagMavResult != MavResult.MavResultAccepted)
-                            _logService.Error(Title, 
+                            _logService.Error(Title,
                                 $"Double tag {doubleTag.Name} setup failed. Result: {tagMavResult}");
                     }
                     else if (tag is StringTagViewModel stringTag)
                     {
                         for (int i = 0; i < 5; i++)
                         {
-                            tagMavResult = await Payload.Sdr.CurrentRecordSetTag(stringTag.Name, 
+                            tagMavResult = await Payload.Sdr.CurrentRecordSetTag(stringTag.Name,
                                 stringTag.Value, cancel).ConfigureAwait(false);
                             if (cancel.IsCancellationRequested || tagMavResult == MavResult.MavResultAccepted) break;
                         }
+
                         if (!cancel.IsCancellationRequested && tagMavResult != MavResult.MavResultAccepted)
-                            _logService.Error(Title, 
+                            _logService.Error(Title,
                                 $"String tag {stringTag.Name} setup failed. Result: {tagMavResult}");
                     }
+
                     if (cancel.IsCancellationRequested) break;
                 }
             }
@@ -425,6 +480,7 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
             }
         }
     }
+
     private void UpdateSelectedMode(AsvSdrCustomMode mode)
     {
         SelectedMode = Modes.FirstOrDefault(__ => __.Mode == mode);
@@ -432,6 +488,7 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
         {
             item.Dispose();
         }
+
         _rttWidgets.Clear();
 
         var items = _providers
@@ -440,75 +497,64 @@ public class FlightSdrViewModel:FlightSdrWidgetBase
             .OrderBy(_ => _.Order);
         _rttWidgets.AddRange(items);
         IsRecordVisible = mode != AsvSdrCustomMode.AsvSdrCustomModeIdle;
-
     }
+
     private void UpdateModes(AsvSdrCustomModeFlag flag)
     {
         Modes.Clear();
-        Modes.Add(new SdrModeViewModel("IDLE", AsvSdrCustomMode.AsvSdrCustomModeIdle, MaterialIconKind.Numeric0CircleOutline));
-        
+        Modes.Add(new SdrModeViewModel("IDLE", AsvSdrCustomMode.AsvSdrCustomModeIdle,
+            MaterialIconKind.Numeric0CircleOutline));
+
         if (flag.HasFlag(AsvSdrCustomModeFlag.AsvSdrCustomModeFlagGp))
         {
             Modes.Add(new SdrModeViewModel("GP", AsvSdrCustomMode.AsvSdrCustomModeGp, MaterialIconKind.AlphaGCircle));
         }
+
         if (flag.HasFlag(AsvSdrCustomModeFlag.AsvSdrCustomModeFlagLlz))
         {
             Modes.Add(new SdrModeViewModel("LLZ", AsvSdrCustomMode.AsvSdrCustomModeLlz, MaterialIconKind.AlphaLCircle));
         }
+
         if (flag.HasFlag(AsvSdrCustomModeFlag.AsvSdrCustomModeFlagVor))
         {
-            Modes.Add(new SdrModeViewModel("VOR", AsvSdrCustomMode.AsvSdrCustomModeVor,MaterialIconKind.AlphaVCircle));
+            Modes.Add(new SdrModeViewModel("VOR", AsvSdrCustomMode.AsvSdrCustomModeVor, MaterialIconKind.AlphaVCircle));
         }
+
         UpdateSelectedMode(Payload.Sdr.CustomMode.Value);
     }
 
     public ObservableCollection<ISdrRttWidget> RttWidgets => _rttWidgets;
-    public string FrequencyUnits => _freqInMHzMeasureUnit.Unit;
+    public string FrequencyInMHzUnits => _freqInMHzMeasureUnit.Unit;
+    public string FrequencyInHzUnits => _freqInHzMeasureUnit.Unit;
     public ObservableCollection<SdrModeViewModel> Modes { get; } = new();
-    [Reactive]
-    public SdrModeViewModel? SelectedMode { get; set; }
-    [Reactive]
-    public string FrequencyInMhz { get; set; }
-    
-    [Reactive]
-    public string Channel { get; set; }
-    
-    [Reactive]
-    public bool IsRecordStarted { get; set; }
-    
-    [Reactive]
-    public bool IsIdleMode { get; set; }
-    
-    [Reactive]
-    public bool IsRecordVisible { get; set; }
-    
-    [Reactive]
-    public IEnumerable<string> Channels { get; set; }
-    
-    [Reactive]
-    public bool IsGpMode { get; set; }
-    
-    [Reactive]
-    public SdrRttItem LinkQuality { get; set; }
-    public ReactiveCommand<Unit,Unit> UpdateMode { get; }
-    public ReactiveCommand<Unit,Unit> StartRecord { get; }
-    public ReactiveCommand<Unit,Unit> StopRecord { get; }
+[Reactive] public string CurrentRecordName { get; set; }
+    [Reactive] public string ThinningFrequencyInHz { get; set; }
+    [Reactive] public string WriteFrequencyInHz { get; set; }
+
+    [Reactive] public SdrModeViewModel? SelectedMode { get; set; }
+    [Reactive] public string FrequencyInMhz { get; set; }
+    [Reactive] public string Channel { get; set; }
+    [Reactive] public bool IsRecordStarted { get; set; }
+    [Reactive] public bool IsIdleMode { get; set; }
+    [Reactive] public bool IsRecordVisible { get; set; }
+    [Reactive] public IEnumerable<string> Channels { get; set; }
+    [Reactive] public bool IsGpMode { get; set; }
+    [Reactive] public SdrRttItem LinkQuality { get; set; }
+    public ReactiveCommand<Unit, Unit> UpdateMode { get; }
+    public ReactiveCommand<Unit, Unit> StartRecord { get; }
+    public ReactiveCommand<Unit, Unit> StopRecord { get; }
     public ICommand SafeRebootOSCommand { get; set; }
     public ICommand SafeShutdownOSCommand { get; set; }
     public ICommand SafeRestartSDRCommand { get; set; }
 
 
-    [Reactive]
-    public ReferencePowerItem[] ReferencePowerItems { get; set; }
-    [Reactive]
-    public ReferencePowerItem RefPowerSelectedItem { get; set; }
-
-    [Reactive]
-    public double SignalOverflowValue { get; set; }
-    [Reactive]
-    public bool IsSignalOverflow { get; set; }
+    [Reactive] public ReferencePowerItem[] ReferencePowerItems { get; set; }
+    [Reactive] public ReferencePowerItem RefPowerSelectedItem { get; set; }
+    [Reactive] public double SignalOverflowValue { get; set; }
+    [Reactive] public bool IsSignalOverflow { get; set; }
 }
-public class SdrModeViewModel:ReactiveObject
+
+public class SdrModeViewModel : ReactiveObject
 {
     public MaterialIconKind Icon { get; }
     public string Name { get; }

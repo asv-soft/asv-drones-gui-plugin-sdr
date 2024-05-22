@@ -358,4 +358,13 @@
     <data name="SdrSettingsViewModel_MeasureUnits_Title" xml:space="preserve">
         <value>Measure units</value>
     </data>
+    <data name="FlightSdrViewModel_DataThinning_Header" xml:space="preserve">
+        <value>Data thinning</value>
+    </data>
+    <data name="FlightSdrViewModel_FileWriteFreq_Header" xml:space="preserve">
+        <value>Frequency of writing to file</value>
+    </data>
+    <data name="FlightSdrViewModel_CurrentRecordName" xml:space="preserve">
+        <value>Record: </value>
+    </data>
 </root>

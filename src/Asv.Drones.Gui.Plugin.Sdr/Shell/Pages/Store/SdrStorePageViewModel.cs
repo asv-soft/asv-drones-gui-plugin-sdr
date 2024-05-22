@@ -52,7 +52,7 @@ public class SdrStorePageViewModel:ShellPage
         _config = config.Get<SdrStorePageViewModelConfig>();
         Store = new SdrStoreBrowserViewModel(store, loc, log);
         Device = new SdrPayloadBrowserViewModel(mavlink, loc, log);
-        DownloadRecord = new CancellableCommandWithProgress<Unit, Unit>(DownloadRecordImpl,"Download record",log).DisposeItWith(Disposable);
+        DownloadRecord = new CancellableCommandWithProgress<Unit, Unit>(DownloadTillComplete,"Download record",log).DisposeItWith(Disposable);
         Store.WhenValueChanged(_ => _.SelectedItem).Subscribe(TrySelectDeviceItem).DisposeItWith(Disposable);
         Device.WhenValueChanged(_ => _.SelectedDevice!.SelectedRecord).Subscribe(TrySelectStoreItem).DisposeItWith(Disposable);
         
@@ -72,9 +72,22 @@ public class SdrStorePageViewModel:ShellPage
 
     public CancellableCommandWithProgress<Unit,Unit> DownloadRecord { get; private set; }
 
-    private async Task<Unit> DownloadRecordImpl(Unit arg, IProgress<double> progress, CancellationToken cancel)
+    private async Task<Unit> DownloadTillComplete(Unit arg, IProgress<double> progress, CancellationToken cancel)
     {
+        var result = false;
         
+        do
+        {
+            result = await DownloadRecordImpl(progress, cancel);
+        } 
+        while (result);
+
+        return Unit.Default;
+    }
+
+    private async Task<bool> DownloadRecordImpl(IProgress<double> progress, CancellationToken cancel)
+    {
+        var downloadCount = 0;
         var ifc = Device.SelectedDevice.Client.Sdr.Base;
         var rec = Device.SelectedDevice.SelectedRecord.Record;
         var recId = rec.Id;
@@ -103,11 +116,17 @@ public class SdrStorePageViewModel:ShellPage
         if (writer.File.Count < remoteCount)
         {
             Logger.Debug($"Remote count({remoteCount}) != local count({writer.File.Count}). Try to read last item");
-            while (cancel.IsCancellationRequested == false)
+            while (cancel.IsCancellationRequested == false && writer.File.Count != remoteCount)
             {
                 var result = await ReadChunk(ifc, new ListDataFileHelper.Chunk { Skip = remoteCount - 1, Take = 1 }, cancel, writer.File,
                     recTypeAsUInt, recId);
-                if (result == 1) break;
+                
+                if (result == 1)
+                {
+                    break;
+                }
+                
+                ++downloadCount;
             }
         }
 
@@ -123,13 +142,14 @@ public class SdrStorePageViewModel:ShellPage
         foreach (var emptyChunk in GetEmptyChunks(writer.File,take))
         {
             var readed = await ReadChunk(ifc, emptyChunk,cancel,writer.File, recTypeAsUInt,recId);
+            ++downloadCount;
             alreadyDownloaded += readed;
             progress.Report((alreadyDownloaded / (double)remoteCount));
             DownloadRecordAction = $"Read {alreadyDownloaded} of {writer.File.Count}";
         }    
         
         await Store.Refresh.Execute();
-        return Unit.Default;
+        return downloadCount > 0;
     }
 
     private IEnumerable<ListDataFileHelper.Chunk> GetEmptyChunks(IListDataFile<AsvSdrRecordFileMetadata> src, int maxPageSize)
