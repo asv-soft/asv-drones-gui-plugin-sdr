@@ -60,6 +60,15 @@ namespace Asv.Drones.Gui.Plugin.Sdr {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Set airport anchors from mission.
+        /// </summary>
+        public static string FlightSdrView_DownloadMissionAirportAnchors_Title {
+            get {
+                return ResourceManager.GetString("FlightSdrView_DownloadMissionAirportAnchors_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Set mode.
         /// </summary>
         public static string FlightSdrView_SetMode_Title {

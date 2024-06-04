@@ -367,4 +367,7 @@
     <data name="FlightSdrViewModel_CurrentRecordName" xml:space="preserve">
         <value>Record: </value>
     </data>
+    <data name="FlightSdrView_DownloadMissionAirportAnchors_Title" xml:space="preserve">
+        <value>Set airport anchors from mission</value>
+    </data>
 </root>
