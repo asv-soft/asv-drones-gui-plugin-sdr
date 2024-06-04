@@ -543,6 +543,7 @@ public class FlightSdrViewModel : FlightSdrWidgetBase
     public ReactiveCommand<Unit, Unit> UpdateMode { get; }
     public ReactiveCommand<Unit, Unit> StartRecord { get; }
     public ReactiveCommand<Unit, Unit> StopRecord { get; }
+    public ReactiveCommand<Unit, Unit> DownloadMissionAirportAnchors { get; }
     public ICommand SafeRebootOSCommand { get; set; }
     public ICommand SafeShutdownOSCommand { get; set; }
     public ICommand SafeRestartSDRCommand { get; set; }
