@@ -15,7 +15,9 @@ using Asv.Drones.Gui.Plugin.Sdr.Rtt.LinkQuality;
 using Asv.Mavlink;
 using Asv.Mavlink.V2.AsvSdr;
 using Asv.Mavlink.V2.Common;
+using Asv.Mavlink.Vehicle;
 using Avalonia.Controls;
+using Avalonia.Media;
 using DynamicData;
 using DynamicData.Binding;
 using FluentAvalonia.UI.Controls;
@@ -341,7 +343,7 @@ public class FlightSdrViewModel : FlightSdrWidgetBase
         foreach (var rec in _records)
         {
             var anchorTitle = "";
-            var geoPoint = new GeoPoint();
+            var anchorLocation = new GeoPoint();
             double? latitude = null;
             double? longitude = null;
             double? altitude = null;
@@ -380,16 +382,32 @@ public class FlightSdrViewModel : FlightSdrWidgetBase
 
             }
 
-            geoPoint = new GeoPoint(latitude.Value, longitude.Value, altitude.Value);
+            anchorLocation = new GeoPoint(latitude.Value, longitude.Value, altitude.Value);
 
-            IMapAnchor anchor = new MapAnchorBase(WellKnownUri.ShellPageMapFlightAnchor) { };
+            IMapAnchor anchor = new MapAnchorBase(new Uri(WellKnownUri.ShellPageMapFlightAnchor))
+            {
+                IsEditable = true,
+                OffsetX = OffsetXEnum.Center,
+                OffsetY = OffsetYEnum.Bottom,
+                Icon = MaterialIconKind.MapMarker,
+                IconBrush = Brushes.Fuchsia,
+                Location = anchorLocation,
+                Title = anchorTitle,
+                IsVisible = true
+            };
             
-            anchor.Location = geoPoint;
+            anchor.Location = anchorLocation;
             anchor.Title = anchorTitle;
+
+            if (_airportAnchors.FirstOrDefault(x => x.Title == anchor.Title) is not null)
+            {
+                continue;
+            }
             
-            _airportAnchors.Add(anchor);
+            AirportAnchorsSource.AddOrUpdate(anchor);
         }
-        var progres 
+        
+        return Unit.Default;
     }
 
     public CancellableCommandWithProgress<Unit, Unit> UpdateMission { get; }
