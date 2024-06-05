@@ -4,6 +4,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Input;
+using Asv.Avalonia.Map;
 using Asv.Cfg;
 using Asv.Common;
 using Asv.Drones.Gui.Api;
@@ -65,6 +66,8 @@ public class FlightSdrViewModel : FlightSdrWidgetBase
     private readonly IMeasureUnitItem<double, FrequencyUnits> _freqInMHzMeasureUnit;
     private FlightSdrViewModelConfig _config;
     private readonly IMeasureUnitItem<double, FrequencyUnits> _freqInHzMeasureUnit;
+    private ReadOnlyObservableCollection<SdrPayloadRecordViewModel> _records;
+    private ReadOnlyObservableCollection<IMapAnchor> _airportAnchors;
 
     public static Uri GenerateUri(ISdrClientDevice sdr) => FlightSdrWidgetBase.GenerateUri(sdr, "sdr");
 
@@ -97,6 +100,13 @@ public class FlightSdrViewModel : FlightSdrWidgetBase
         _config = _configuration.Get<FlightSdrViewModelConfig>();
         _freqInHzMeasureUnit = _loc.Frequency.AvailableUnits.First(_ => _.Id == Api.FrequencyUnits.Hz);
         _freqInMHzMeasureUnit = _loc.Frequency.AvailableUnits.First(_ => _.Id == Api.FrequencyUnits.MHz);
+        
+        AirportAnchorsSource = new SourceCache<IMapAnchor, Uri>(anchor => anchor.Id).DisposeItWith(Disposable);
+        AirportAnchorsSource.Connect()
+            .Bind(out _airportAnchors)
+            .DisposeMany()
+            .Subscribe()
+            .DisposeItWith(Disposable);
 
         ReferencePowerItems = new[]
         {
@@ -317,6 +327,70 @@ public class FlightSdrViewModel : FlightSdrWidgetBase
         return Unit.Default;
     }
 
+    private async Task<Unit> DownloadMissionAirportAnchorsImpl(Unit arg, CancellationToken cancel)
+    {
+        double downloadRecordsProgress;
+        var recId = _payload.Sdr.CurrentRecord;
+        var records = _payload.Sdr.Records.Transform(_ => new SdrPayloadRecordViewModel(_payload.Heartbeat.FullId, _, _logService, _loc, _payload.Sdr))
+            .SortBy(_ => _.Name)
+            .Bind(out _records)
+            .DisposeMany()
+            .Subscribe()
+            .DisposeItWith(Disposable);;
+
+        foreach (var rec in _records)
+        {
+            var anchorTitle = "";
+            var geoPoint = new GeoPoint();
+            double? latitude = null;
+            double? longitude = null;
+            double? altitude = null;
+            foreach (var tag in rec.Tags)
+            {
+                if (!tag.Name.IsMatchingTo(@"^(\w+)-(lat|long|alt)$"))
+                {
+                    continue;
+                }
+
+                var type = tag.Name.Split('-')[0];
+                var unit = tag.Name.Split('-')[1];
+                
+                if (anchorTitle.IsEmpty())
+                {
+                    anchorTitle = type;
+                }
+
+                switch (unit)
+                {
+                    case "lat":
+                        latitude = ((DoubleTagViewModel)tag).Value;
+                        continue;
+                    case "long":
+                        longitude = ((DoubleTagViewModel)tag).Value;
+                        continue;
+                    case "alt":
+                        altitude = ((DoubleTagViewModel)tag).Value;
+                        continue;
+                }
+            }
+
+            if (longitude is null || altitude is null || latitude is null)
+            {
+                throw new Exception("Some anchor tag info is missing"); // TODO: возможно сделать трайкетч
+
+            }
+
+            geoPoint = new GeoPoint(latitude.Value, longitude.Value, altitude.Value);
+
+            IMapAnchor anchor = new MapAnchorBase(WellKnownUri.ShellPageMapFlightAnchor) { };
+            
+            anchor.Location = geoPoint;
+            anchor.Title = anchorTitle;
+            
+            _airportAnchors.Add(anchor);
+        }
+        var progres 
+    }
 
     public CancellableCommandWithProgress<Unit, Unit> UpdateMission { get; }
     [Reactive] public string MissionStatusText { get; set; }
@@ -527,7 +601,10 @@ public class FlightSdrViewModel : FlightSdrWidgetBase
     public string FrequencyInMHzUnits => _freqInMHzMeasureUnit.Unit;
     public string FrequencyInHzUnits => _freqInHzMeasureUnit.Unit;
     public ObservableCollection<SdrModeViewModel> Modes { get; } = new();
-[Reactive] public string CurrentRecordName { get; set; }
+    public SourceCache<IMapAnchor, Uri> AirportAnchorsSource { get; }
+    public ReadOnlyObservableCollection<IMapAnchor> AirportAnchors => _airportAnchors;
+    
+    [Reactive] public string CurrentRecordName { get; set; }
     [Reactive] public string ThinningFrequencyInHz { get; set; }
     [Reactive] public string WriteFrequencyInHz { get; set; }
 
@@ -540,6 +617,7 @@ public class FlightSdrViewModel : FlightSdrWidgetBase
     [Reactive] public IEnumerable<string> Channels { get; set; }
     [Reactive] public bool IsGpMode { get; set; }
     [Reactive] public SdrRttItem LinkQuality { get; set; }
+    
     public ReactiveCommand<Unit, Unit> UpdateMode { get; }
     public ReactiveCommand<Unit, Unit> StartRecord { get; }
     public ReactiveCommand<Unit, Unit> StopRecord { get; }
