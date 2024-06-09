@@ -4,6 +4,7 @@ using Asv.Common;
 using Asv.Drones.Gui.Api;
 using Asv.Mavlink;
 using Asv.Mavlink.V2.AsvSdr;
+using Avalonia;
 using Avalonia.Controls;
 using ReactiveUI.Fody.Helpers;
 
@@ -42,7 +43,7 @@ public class VorSdrRttViewModel : ViewModelBase, ISdrRttWidget
             PowerStringValue = "-30.53";
             PowerUnits = "dBm";
 
-            FrequencyOffsetTitle = "";
+            FrequencyOffsetTitle = "Frequency offset";
             FrequencyOffsetStringValue = "0.036";
             FrequencyOffsetUnits = "kHz";
 
@@ -89,6 +90,9 @@ public class VorSdrRttViewModel : ViewModelBase, ISdrRttWidget
     public VorSdrRttViewModel(ISdrClientDevice payload, ILogService log, ILocalizationService loc, IConfiguration configuration)
         :base(FlightSdrWidgetBase.GenerateUri(payload, "sdr/vor"))
     {
+        TopProgressLineRightPoint = new Point(120, 2.5);
+        TopProgressLineLeftPoint = new Point(80, 2.5);
+        
         _logService = log ?? throw new ArgumentNullException(nameof(log));
         _loc = loc ?? throw new ArgumentNullException(nameof(loc));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -110,8 +114,8 @@ public class VorSdrRttViewModel : ViewModelBase, ISdrRttWidget
         
         PowerTitle = RS.VorSdrRttViewModelPowerTitle;
         PowerUnits = _loc.Power.CurrentUnit.Value.Unit;
-
-        FrequencyOffsetTitle = "";
+    
+        FrequencyOffsetTitle = "Frequency offset";
         FrequencyOffsetUnits = _freqInKHzMeasureUnit?.Unit;
 
         BearingTitle = RS.VorSdrRttViewModelBearingTitle;
@@ -125,7 +129,7 @@ public class VorSdrRttViewModel : ViewModelBase, ISdrRttWidget
 
         FmDeviationTitle = RS.VorSdrRttViewModelFMDeviationTitle;
         FmDeviationUnits = _freqInHzMeasureUnit?.Unit;
-        
+        //TODO: Localize
         IdCodeTitle = RS.SdrRttViewModel_ID_Code_Title;
 
         VoiceAmTitle = RS.VorSdrRttViewModelVoiceAmTitle;
@@ -141,7 +145,7 @@ public class VorSdrRttViewModel : ViewModelBase, ISdrRttWidget
         FreqFm30Units = _freqInHzMeasureUnit?.Unit;
 
         FmIndexTitle = RS.VorSdrRttViewModelFMIndexTitle;
-
+        
         _loc.Bearing.CurrentUnit
             .Subscribe(_ => BearingUnits = _.Unit)
             .DisposeItWith(Disposable);
@@ -179,6 +183,11 @@ public class VorSdrRttViewModel : ViewModelBase, ISdrRttWidget
             }).DisposeItWith(Disposable);
     }
 
+    [Reactive]
+    public Point TopProgressLineRightPoint { get; set; }
+    
+    [Reactive]
+    public Point TopProgressLineLeftPoint { get; set; }
     
     #region Main Frequency
     

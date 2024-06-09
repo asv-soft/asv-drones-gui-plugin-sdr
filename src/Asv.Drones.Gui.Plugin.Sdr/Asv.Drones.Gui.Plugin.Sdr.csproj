@@ -24,6 +24,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Asv.Avalonia.Toolkit" Version="0.1.4" />
         <PackageReference Include="Asv.Drones.Gui.Api" Version="$(ApiVersion)" />
         <PackageReference Include="ReactiveUI.Fody" Version="$(ReactiveUIVersion)" />
     </ItemGroup>
@@ -41,6 +42,7 @@
         <AutoGen>True</AutoGen>
         <DependentUpon>RS.resx</DependentUpon>
       </Compile>
+      <Compile Remove="Shell\Pages\Flight\Widgets\Kakish.axaml.cs" />
     </ItemGroup>
 
     <ItemGroup>

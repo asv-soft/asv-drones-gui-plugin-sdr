@@ -1,10 +1,13 @@
 using System.Reactive.Linq;
+using Asv.Avalonia.Toolkit.UI.Controls.Indicators;
 using Asv.Cfg;
 using Asv.Common;
 using Asv.Drones.Gui.Api;
 using Asv.Mavlink;
 using Asv.Mavlink.V2.AsvSdr;
+using Avalonia;
 using Avalonia.Controls;
+using DynamicData.Binding;
 using ReactiveUI.Fody.Helpers;
 
 namespace Asv.Drones.Gui.Plugin.Sdr.Rtt.CustomControls;
@@ -14,8 +17,8 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
     private readonly ILogService _logService;
     private readonly ILocalizationService _loc;
     private readonly IConfiguration _configuration;
-    private readonly IMeasureUnitItem<double,FrequencyUnits> _freqInHzMeasureUnit;
-    private readonly IMeasureUnitItem<double,FrequencyUnits> _freqInKHzMeasureUnit;
+    private readonly IMeasureUnitItem<double, FrequencyUnits> _freqInHzMeasureUnit;
+    private readonly IMeasureUnitItem<double, FrequencyUnits> _freqInKHzMeasureUnit;
     private readonly IMeasureUnitItem<double, FrequencyUnits> _freqInMHzMeasureUnit;
 
     public LlzSdrRttViewModel() : base(new Uri($"fordesigntime://{Guid.NewGuid()}"))
@@ -24,19 +27,19 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
         {
             ChannelTitle = RS.LlzSdrRttViewModelChannelTitle;
             ChannelStringValue = $"{18}X";
-            
+
             MainFrequencyTitle = RS.LlzSdrRttViewModel_MainFrequency_Title;
             MainFrequencyStringValue = $"{108.1:F4}";
             MainFrequencyUnits = "MHz";
-            
+
             MeasureTimeTitle = RS.LlzSdrRttViewModel_MeasureTime_Title;
             MeasureTimeStringValue = $"{500}";
             MeasureTimeUnits = "ms";
-            
+
             FieldStrengthTitle = RS.LlzSdrRttViewModel_FieldStrength_Title;
             FieldStrengthStringValue = $"{100000}";
             FieldStrengthUnits = "μV/m";
-            
+
             TotalPowerTitle = RS.SdrRttViewModel_SumPower_Title;
             TotalPowerUnits = "dBm";
             TotalPowerValue = -37.45;
@@ -61,7 +64,7 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
             Phi90Title = "PHI 90";
             Phi90Units = "°";
             Phi90StringValue = "0.01";
-        
+
             Phi150Title = "PHI 150";
             Phi150Units = "°";
             Phi150StringValue = "0.02";
@@ -72,11 +75,11 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
             TotalFreq90Title = RS.LlzSdrRttViewModel_Freq_90_Hz_Title;
             TotalFreq90Units = "Hz";
             TotalFreq90StringValue = "90.00";
-        
+
             TotalFreq150Title = RS.LlzSdrRttViewModel_Freq_150_Hz_Title;
             TotalFreq150Units = "Hz";
             TotalFreq150StringValue = "150.00";
-            
+
             // CRS
             CrsPowerTitle = RS.LlzSdrRttViewModel_CRSPower_Title;
             CrsPowerUnits = "dBm";
@@ -102,7 +105,7 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
             CrsFrequencyTitle = "";
             CrsFrequencyUnits = "kHz";
             CrsFrequencyStringValue = "8.000";
-            
+
             // CLR
             ClrPowerTitle = RS.LlzSdrRttViewModel_CLRPower_Title;
             ClrPowerUnits = "dBm";
@@ -131,9 +134,12 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
         }
     }
 
-    public LlzSdrRttViewModel(ISdrClientDevice payload, ILogService log, ILocalizationService loc, IConfiguration configuration)
-        :base(FlightSdrWidgetBase.GenerateUri(payload, "sdr/llz"))
+    public LlzSdrRttViewModel(ISdrClientDevice payload, ILogService log, ILocalizationService loc,
+        IConfiguration configuration)
+        : base(FlightSdrWidgetBase.GenerateUri(payload, "sdr/llz"))
     {
+        ClrPowerProgressRightPoint = new Point(120, 2.5);
+        ClrPowerProgressLeftPoint = new Point(80, 2.5);
         _logService = log ?? throw new ArgumentNullException(nameof(log));
         _loc = loc ?? throw new ArgumentNullException(nameof(loc));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -143,25 +149,25 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
         _freqInMHzMeasureUnit = _loc.Frequency.AvailableUnits.FirstOrDefault(__ => __.Id == FrequencyUnits.MHz);
 
         ChannelTitle = RS.LlzSdrRttViewModelChannelTitle;
-        
+
         MainFrequencyTitle = RS.LlzSdrRttViewModel_MainFrequency_Title;
         MainFrequencyUnits = _freqInMHzMeasureUnit?.Unit;
-        
+
         MeasureTimeTitle = RS.LlzSdrRttViewModel_MeasureTime_Title;
         MeasureTimeUnits = RS.LLzSdrRttViewModel_MeasureTime_Units;
-        
+
         FieldStrengthTitle = RS.LlzSdrRttViewModel_FieldStrength_Title;
         FieldStrengthUnits = RS.LLzSdrRttViewModel_FieldStrength_Units;
-        
+
         TotalPowerTitle = RS.SdrRttViewModel_SumPower_Title;
         TotalPowerUnits = _loc.Power.CurrentUnit.Value.Unit;
-        
+
         TotalDdmTitle = RS.LlzSdrRttViewModel_DDM_Title;
         TotalDdmUnits = _loc.DdmLlz.CurrentUnit.Value.Unit;
-        
+
         TotalSdmTitle = RS.LlzSdrRttViewModel_SDM_Title;
         TotalSdmUnits = _loc.Sdm.CurrentUnit.Value.Unit;
-        
+
         TotalAm90Title = RS.LlzSdrRttViewModel_AM_90_Hz_Title;
         TotalAm90Units = _loc.AmplitudeModulation.CurrentUnit.Value.Unit;
 
@@ -170,28 +176,28 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
 
         Phi90Title = "PHI 90";
         Phi90Units = _loc.Phase.CurrentUnit.Value.Unit;
-        
+
         Phi150Title = "PHI 150";
         Phi150Units = _loc.Phase.CurrentUnit.Value.Unit;
-        
+
         IdCodeTitle = RS.SdrRttViewModel_ID_Code_Title;
 
         TotalFreq90Title = RS.LlzSdrRttViewModel_Freq_90_Hz_Title;
         TotalFreq90Units = _freqInHzMeasureUnit?.Unit;
-        
+
         TotalFreq150Title = RS.LlzSdrRttViewModel_Freq_150_Hz_Title;
         TotalFreq150Units = _freqInHzMeasureUnit?.Unit;
-        
+
         // CRS
         CrsPowerTitle = RS.LlzSdrRttViewModel_CRSPower_Title;
         CrsPowerUnits = _loc.Power.CurrentUnit.Value.Unit;
-        
+
         CrsDdmTitle = RS.LlzSdrRttViewModel_DDM_Title;
         CrsDdmUnits = _loc.DdmLlz.CurrentUnit.Value.Unit;
 
         CrsSdmTitle = RS.LlzSdrRttViewModel_SDM_Title;
         CrsSdmUnits = _loc.Sdm.CurrentUnit.Value.Unit;
-        
+
         CrsAm90Title = RS.LlzSdrRttViewModel_AM_90_Hz_Title;
         CrsAm90Units = _loc.AmplitudeModulation.CurrentUnit.Value.Unit;
 
@@ -200,7 +206,7 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
 
         CrsFrequencyTitle = "";
         CrsFrequencyUnits = _freqInKHzMeasureUnit?.Unit;
-        
+
         // CLR
         ClrPowerTitle = RS.LlzSdrRttViewModel_CLRPower_Title;
         ClrPowerUnits = _loc.Power.CurrentUnit.Value.Unit;
@@ -211,7 +217,7 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
 
         ClrSdmTitle = RS.LlzSdrRttViewModel_SDM_Title;
         ClrSdmUnits = _loc.Sdm.CurrentUnit.Value.Unit;
-        
+
         ClrAm90Title = RS.LlzSdrRttViewModel_AM_90_Hz_Title;
         ClrAm90Units = _loc.AmplitudeModulation.CurrentUnit.Value.Unit;
 
@@ -220,10 +226,11 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
 
         ClrFrequencyTitle = "";
         ClrFrequencyUnits = _freqInKHzMeasureUnit?.Unit;
-        
+
         _loc.DdmLlz.CurrentUnit.Subscribe(_ =>
         {
             TotalDdmUnits = _.Unit;
+            TotalDdmTitle += $", {TotalDdmUnits}";
             CrsDdmUnits = _.Unit;
             ClrDdmUnits = _.Unit;
         }).DisposeItWith(Disposable);
@@ -233,15 +240,16 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
             TotalSdmUnits = _.Unit;
             CrsSdmUnits = _.Unit;
             ClrSdmUnits = _.Unit;
+            TotalSdmTitle += $", {TotalSdmUnits}";
         }).DisposeItWith(Disposable);
-        
+
         _loc.Power.CurrentUnit.Subscribe(_ =>
         {
             TotalPowerUnits = _.Unit;
             CrsPowerUnits = _.Unit;
             ClrPowerUnits = _.Unit;
         }).DisposeItWith(Disposable);
-        
+
         _loc.AmplitudeModulation.CurrentUnit.Subscribe(_ =>
         {
             TotalAm90Units = _.Unit;
@@ -251,26 +259,31 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
             ClrAm90Units = _.Unit;
             ClrAm150Units = _.Unit;
         }).DisposeItWith(Disposable);
-        
+
         _loc.Phase.CurrentUnit.Subscribe(_ =>
         {
             Phi90Units = _.Unit;
             Phi150Units = _.Unit;
         }).DisposeItWith(Disposable);
-        
+        this.WhenValueChanged(vm => vm.TotalSdmValue).Subscribe(_ =>
+        {
+            TotalSdmStatus = _loc.Sdm.ConvertFromSi(_) < 75 ? IndicatorStatusEnum.Critical : IndicatorStatusEnum.Success;
+        });
+
         payload.Sdr.Base.OnRecordData.Where(_ => _.MessageId == AsvSdrRecordDataLlzPacket.PacketMessageId)
             .Cast<AsvSdrRecordDataLlzPacket>()
-            .Subscribe(_=>
+            .Subscribe(_ =>
             {
                 ChannelStringValue = SdrRttHelper.GetIlsChannelFromLocalizerModeFrequency(_.Payload.TotalFreq);
                 MainFrequencyStringValue = _freqInMHzMeasureUnit?.FromSiToString(_.Payload.TotalFreq);
                 MeasureTimeStringValue = $"{_.Payload.MeasureTime}";
                 FieldStrengthStringValue = $"{_.Payload.TotalFieldStrength}";
-                
+
                 TotalPowerValue = _.Payload.TotalPower;
                 TotalPowerStringValue = _loc.Power.FromSiToString(_.Payload.TotalPower);
                 TotalDdmStringValue = _loc.DdmLlz.FromSiToString(_.Payload.TotalAm150 - _.Payload.TotalAm90);
-                TotalSdmStringValue = _loc.Sdm.FromSiToString((_.Payload.TotalAm90 + _.Payload.TotalAm150));
+                TotalSdmValue = _.Payload.TotalAm90 + _.Payload.TotalAm150;
+                TotalSdmStringValue = _loc.Sdm.FromSiToString(TotalSdmValue);
                 TotalAm90StringValue = _loc.AmplitudeModulation.FromSiToString(_.Payload.TotalAm90);
                 TotalAm150StringValue = _loc.AmplitudeModulation.FromSiToString(_.Payload.TotalAm150);
                 Phi90StringValue = _loc.Phase.FromSiToString(_.Payload.Phi90CrsVsClr);
@@ -298,358 +311,284 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
             .DisposeItWith(Disposable);
     }
 
+    [Reactive] public Point ClrPowerProgressRightPoint { get; set; }
+    [Reactive] public Point ClrPowerProgressLeftPoint { get; set; }
+    [Reactive] public IndicatorStatusEnum TotalPowerStatus { get; set; }
+    [Reactive] public IndicatorStatusEnum TotalDdmStatus { get; set; }
+    [Reactive] public IndicatorStatusEnum TotalSdmStatus { get; set; }
+    [Reactive] public double TotalSdmValue { get; set; }
     
-    #region Main Frequency
-    
-    [Reactive]
-    public string MainFrequencyTitle { get; set; }
-    
-    [Reactive]
-    public string MainFrequencyStringValue { get; set; }
 
-    [Reactive]
-    public string MainFrequencyUnits { get; set; }
-    
+    #region Main Frequency
+
+    [Reactive] public string MainFrequencyTitle { get; set; }
+
+    [Reactive] public string MainFrequencyStringValue { get; set; }
+
+    [Reactive] public string MainFrequencyUnits { get; set; }
+
     #endregion
-    
+
     #region Channel
 
-    [Reactive]
-    public string ChannelTitle { get; set; }
-    
-    [Reactive]
-    public string ChannelStringValue { get; set; }
+    [Reactive] public string ChannelTitle { get; set; }
 
-    [Reactive]
-    public string ChannelUnits { get; set; }
+    [Reactive] public string ChannelStringValue { get; set; }
+
+    [Reactive] public string ChannelUnits { get; set; }
 
     #endregion
-    
+
     #region Measure Time
 
-    [Reactive]
-    public string MeasureTimeTitle { get; set; }
-    
-    [Reactive]
-    public string MeasureTimeStringValue { get; set; }
+    [Reactive] public string MeasureTimeTitle { get; set; }
 
-    [Reactive]
-    public string MeasureTimeUnits { get; set; }
+    [Reactive] public string MeasureTimeStringValue { get; set; }
+
+    [Reactive] public string MeasureTimeUnits { get; set; }
 
     #endregion
-    
+
     #region Field Strength
 
-    [Reactive]
-    public string FieldStrengthTitle { get; set; }
-    
-    [Reactive]
-    public string FieldStrengthStringValue { get; set; }
+    [Reactive] public string FieldStrengthTitle { get; set; }
 
-    [Reactive]
-    public string FieldStrengthUnits { get; set; }
+    [Reactive] public string FieldStrengthStringValue { get; set; }
+
+    [Reactive] public string FieldStrengthUnits { get; set; }
 
     #endregion
 
     #region Total Power
 
-    [Reactive]
-    public string TotalPowerTitle { get; set; }
-    
-    [Reactive]
-    public double TotalPowerValue { get; set; }
-    
-    [Reactive]
-    public string TotalPowerStringValue { get; set; }
-    
-    [Reactive]
-    public string TotalPowerUnits { get; set; }
-    
+    [Reactive] public string TotalPowerTitle { get; set; }
+
+    [Reactive] public double TotalPowerValue { get; set; }
+
+    [Reactive] public string TotalPowerStringValue { get; set; }
+
+    [Reactive] public string TotalPowerUnits { get; set; }
+
     #endregion
 
     #region Total Ddm
 
-    [Reactive]
-    public string TotalDdmTitle { get; set; }
-    
-    [Reactive]
-    public string TotalDdmStringValue { get; set; }
-    
-    [Reactive]
-    public string TotalDdmUnits { get; set; }
+    [Reactive] public string TotalDdmTitle { get; set; }
+
+    [Reactive] public string TotalDdmStringValue { get; set; }
+
+    [Reactive] public string TotalDdmUnits { get; set; }
 
     #endregion
 
     #region Total Sdm
 
-    [Reactive]
-    public string TotalSdmTitle { get; set; }
-    
-    [Reactive]
-    public string TotalSdmStringValue { get; set; }
-    
-    [Reactive]
-    public string TotalSdmUnits { get; set; }
-    
-    
+    [Reactive] public string TotalSdmTitle { get; set; }
+
+    [Reactive] public string TotalSdmStringValue { get; set; }
+
+    [Reactive] public string TotalSdmUnits { get; set; }
+
     #endregion
 
     #region Total Am90
 
-    [Reactive]
-    public string TotalAm90Title { get; set; }
-    
-    [Reactive]
-    public string TotalAm90StringValue { get; set; }
-    
-    [Reactive]
-    public string TotalAm90Units { get; set; }
-    
+    [Reactive] public string TotalAm90Title { get; set; }
+
+    [Reactive] public string TotalAm90StringValue { get; set; }
+
+    [Reactive] public string TotalAm90Units { get; set; }
+
     #endregion
 
     #region Total Am150
 
-    [Reactive]
-    public string TotalAm150Title { get; set; }
-    
-    [Reactive]
-    public string TotalAm150StringValue { get; set; }
-    
-    [Reactive]
-    public string TotalAm150Units { get; set; }
-    
+    [Reactive] public string TotalAm150Title { get; set; }
+
+    [Reactive] public string TotalAm150StringValue { get; set; }
+
+    [Reactive] public string TotalAm150Units { get; set; }
+
     #endregion
 
     #region Phi 90
 
-    [Reactive]
-    public string Phi90Title { get; set; }
-    
-    [Reactive]
-    public string Phi90StringValue { get; set; }
-    
-    [Reactive]
-    public string Phi90Units { get; set; }
-    
+    [Reactive] public string Phi90Title { get; set; }
+
+    [Reactive] public string Phi90StringValue { get; set; }
+
+    [Reactive] public string Phi90Units { get; set; }
+
     #endregion
 
     #region Phi 150
 
-    [Reactive]
-    public string Phi150Title { get; set; }
-    
-    [Reactive]
-    public string Phi150StringValue { get; set; }
-    
-    [Reactive]
-    public string Phi150Units { get; set; }
-    
+    [Reactive] public string Phi150Title { get; set; }
+
+    [Reactive] public string Phi150StringValue { get; set; }
+
+    [Reactive] public string Phi150Units { get; set; }
+
     #endregion
 
     #region IdCode
 
-    [Reactive]
-    public string IdCodeTitle { get; set; }
-    
-    [Reactive]
-    public string IdCodeStringValue { get; set; }
-    
+    [Reactive] public string IdCodeTitle { get; set; }
+
+    [Reactive] public string IdCodeStringValue { get; set; }
+
     #endregion
 
     #region Total Freq 90
 
-    [Reactive]
-    public string TotalFreq90Title { get; set; }
-    
-    [Reactive]
-    public string TotalFreq90StringValue { get; set; }
-    
-    [Reactive]
-    public string TotalFreq90Units { get; set; }
-    
+    [Reactive] public string TotalFreq90Title { get; set; }
+
+    [Reactive] public string TotalFreq90StringValue { get; set; }
+
+    [Reactive] public string TotalFreq90Units { get; set; }
+
     #endregion
 
     #region Total Freq 150
 
-    [Reactive]
-    public string TotalFreq150Title { get; set; }
-    
-    [Reactive]
-    public string TotalFreq150StringValue { get; set; }
-    
-    [Reactive]
-    public string TotalFreq150Units { get; set; }
-    
+    [Reactive] public string TotalFreq150Title { get; set; }
+
+    [Reactive] public string TotalFreq150StringValue { get; set; }
+
+    [Reactive] public string TotalFreq150Units { get; set; }
+
     #endregion
-    
-    
+
+
     // CRS
-    
+
     #region Crs Power
 
-    [Reactive]
-    public string CrsPowerTitle { get; set; }
-    
-    [Reactive]
-    public double CrsPowerValue { get; set; }
-    
-    [Reactive]
-    public string CrsPowerStringValue { get; set; }
-    
-    [Reactive]
-    public string CrsPowerUnits { get; set; }
+    [Reactive] public string CrsPowerTitle { get; set; }
+
+    [Reactive] public double CrsPowerValue { get; set; }
+
+    [Reactive] public string CrsPowerStringValue { get; set; }
+
+    [Reactive] public string CrsPowerUnits { get; set; }
 
     #endregion
 
     #region Crs Ddm
 
-    [Reactive]
-    public string CrsDdmTitle { get; set; }
-    
-    [Reactive]
-    public string CrsDdmStringValue { get; set; }
-    
-    [Reactive]
-    public string CrsDdmUnits { get; set; }
-    
+    [Reactive] public string CrsDdmTitle { get; set; }
+
+    [Reactive] public string CrsDdmStringValue { get; set; }
+
+    [Reactive] public string CrsDdmUnits { get; set; }
+
     #endregion
 
     #region Crs Sdm
 
-    [Reactive]
-    public string CrsSdmTitle { get; set; }
-    
-    [Reactive]
-    public string CrsSdmStringValue { get; set; }
-    
-    [Reactive]
-    public string CrsSdmUnits { get; set; }
-    
+    [Reactive] public string CrsSdmTitle { get; set; }
+
+    [Reactive] public string CrsSdmStringValue { get; set; }
+
+    [Reactive] public string CrsSdmUnits { get; set; }
+
     #endregion
 
     #region Crs Am90
 
-    [Reactive]
-    public string CrsAm90Title { get; set; }
-    
-    [Reactive]
-    public string CrsAm90StringValue { get; set; }
-    
-    [Reactive]
-    public string CrsAm90Units { get; set; }
-    
+    [Reactive] public string CrsAm90Title { get; set; }
+
+    [Reactive] public string CrsAm90StringValue { get; set; }
+
+    [Reactive] public string CrsAm90Units { get; set; }
+
     #endregion
 
     #region Crs Am150
 
-    [Reactive]
-    public string CrsAm150Title { get; set; }
-    
-    [Reactive]
-    public string CrsAm150StringValue { get; set; }
-    
-    [Reactive]
-    public string CrsAm150Units { get; set; }
-    
+    [Reactive] public string CrsAm150Title { get; set; }
+
+    [Reactive] public string CrsAm150StringValue { get; set; }
+
+    [Reactive] public string CrsAm150Units { get; set; }
+
     #endregion
-    
+
     #region Crs Frequency
 
-    [Reactive]
-    public string CrsFrequencyTitle { get; set; }
-    
-    [Reactive]
-    public string CrsFrequencyStringValue { get; set; }
-    
-    [Reactive]
-    public string CrsFrequencyUnits { get; set; }
-    
+    [Reactive] public string CrsFrequencyTitle { get; set; }
+
+    [Reactive] public string CrsFrequencyStringValue { get; set; }
+
+    [Reactive] public string CrsFrequencyUnits { get; set; }
+
     #endregion
-    
-    
+
+
     // CLR
-    
+
     #region Clr Power
 
-    [Reactive]
-    public string ClrPowerTitle { get; set; }
-    
-    [Reactive]
-    public double ClrPowerValue { get; set; }
-    
-    [Reactive]
-    public string ClrPowerStringValue { get; set; }
-    
-    [Reactive]
-    public string ClrPowerUnits { get; set; }
+    [Reactive] public string ClrPowerTitle { get; set; }
+
+    [Reactive] public double ClrPowerValue { get; set; }
+
+    [Reactive] public string ClrPowerStringValue { get; set; }
+
+    [Reactive] public string ClrPowerUnits { get; set; }
 
     #endregion
 
     #region Clr Ddm
 
-    [Reactive]
-    public string ClrDdmTitle { get; set; }
-    
-    [Reactive]
-    public string ClrDdmStringValue { get; set; }
-    
-    [Reactive]
-    public string ClrDdmUnits { get; set; }
+    [Reactive] public string ClrDdmTitle { get; set; }
+
+    [Reactive] public string ClrDdmStringValue { get; set; }
+
+    [Reactive] public string ClrDdmUnits { get; set; }
 
     #endregion
 
     #region Clr Sdm
 
-    [Reactive]
-    public string ClrSdmTitle { get; set; }
-    
-    [Reactive]
-    public string ClrSdmStringValue { get; set; }
-    
-    [Reactive]
-    public string ClrSdmUnits { get; set; }
-    
+    [Reactive] public string ClrSdmTitle { get; set; }
+
+    [Reactive] public string ClrSdmStringValue { get; set; }
+
+    [Reactive] public string ClrSdmUnits { get; set; }
+
     #endregion
 
     #region Clr Am90
 
-    [Reactive]
-    public string ClrAm90Title { get; set; }
-    
-    [Reactive]
-    public string ClrAm90StringValue { get; set; }
-    
-    [Reactive]
-    public string ClrAm90Units { get; set; }
-    
+    [Reactive] public string ClrAm90Title { get; set; }
+
+    [Reactive] public string ClrAm90StringValue { get; set; }
+
+    [Reactive] public string ClrAm90Units { get; set; }
+
     #endregion
 
     #region Clr Am150
 
-    [Reactive]
-    public string ClrAm150Title { get; set; }
-    
-    [Reactive]
-    public string ClrAm150StringValue { get; set; }
-    
-    [Reactive]
-    public string ClrAm150Units { get; set; }
-    
+    [Reactive] public string ClrAm150Title { get; set; }
+
+    [Reactive] public string ClrAm150StringValue { get; set; }
+
+    [Reactive] public string ClrAm150Units { get; set; }
+
     #endregion
-    
+
     #region Clr Frequency
 
-    [Reactive]
-    public string ClrFrequencyTitle { get; set; }
-    
-    [Reactive]
-    public string ClrFrequencyStringValue { get; set; }
-    
-    [Reactive]
-    public string ClrFrequencyUnits { get; set; }
-    
+    [Reactive] public string ClrFrequencyTitle { get; set; }
+
+    [Reactive] public string ClrFrequencyStringValue { get; set; }
+
+    [Reactive] public string ClrFrequencyUnits { get; set; }
+
     #endregion
 
-    public int Order  => 0;
+    public int Order => 0;
     public bool IsVisible { get; set; } = true;
 }
