@@ -194,6 +194,7 @@ public class GpSdrRttViewModel : ViewModelBase, ISdrRttWidget
         _loc.DdmGp.CurrentUnit.Subscribe(_ =>
         {
             TotalDdmUnits = _.Unit;
+            TotalDdmTitle += $", {TotalDdmUnits}";
             CrsDdmUnits = _.Unit;
             ClrDdmUnits = _.Unit;
         }).DisposeItWith(Disposable);
@@ -201,6 +202,7 @@ public class GpSdrRttViewModel : ViewModelBase, ISdrRttWidget
         _loc.Sdm.CurrentUnit.Subscribe(_ =>
         {
             TotalSdmUnits = _.Unit;
+            TotalSdmTitle += $", {TotalSdmUnits}";
             CrsSdmUnits = _.Unit;
             ClrSdmUnits = _.Unit;
         }).DisposeItWith(Disposable);

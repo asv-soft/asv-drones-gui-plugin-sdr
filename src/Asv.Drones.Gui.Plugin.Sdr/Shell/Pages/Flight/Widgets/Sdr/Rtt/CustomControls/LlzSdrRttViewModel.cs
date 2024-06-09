@@ -230,6 +230,7 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
         _loc.DdmLlz.CurrentUnit.Subscribe(_ =>
         {
             TotalDdmUnits = _.Unit;
+            TotalDdmTitle += $", {TotalDdmUnits}";
             CrsDdmUnits = _.Unit;
             ClrDdmUnits = _.Unit;
         }).DisposeItWith(Disposable);
@@ -239,6 +240,7 @@ public class LlzSdrRttViewModel : ViewModelBase, ISdrRttWidget
             TotalSdmUnits = _.Unit;
             CrsSdmUnits = _.Unit;
             ClrSdmUnits = _.Unit;
+            TotalSdmTitle += $", {TotalSdmUnits}";
         }).DisposeItWith(Disposable);
 
         _loc.Power.CurrentUnit.Subscribe(_ =>

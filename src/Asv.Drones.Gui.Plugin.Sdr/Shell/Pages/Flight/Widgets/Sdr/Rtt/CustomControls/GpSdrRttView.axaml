@@ -30,7 +30,7 @@
 
             LeftStatus="Success"
             LeftText="{CompiledBinding TotalDdmStringValue}"
-            LeftTitle="DDM, %" />
+            LeftTitle="{CompiledBinding TotalDdmTitle}" />
         <indicators:DualCircularTripleSectionIndicator
 
             Title="CRS \ CLR"

@@ -27,11 +27,11 @@
 
             RightStatus="{CompiledBinding TotalSdmStatus}"
             RightText="{CompiledBinding TotalSdmStringValue}"
-            RightTitle="SDM, %"
+            RightTitle="{CompiledBinding TotalSdmTitle}"
 
             LeftStatus="{CompiledBinding TotalDdmStatus}"
             LeftText="{CompiledBinding TotalDdmStringValue}"
-            LeftTitle="DDM, %" />
+            LeftTitle="{CompiledBinding TotalDdmTitle}" />
         <indicators:DualCircularTripleSectionIndicator
 
             Title="CRS \ CLR"
