@@ -20,7 +20,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <OutputPath>..\..\..\asv-drones-gui\src\Asv.Drones.Gui.Desktop\bin\Debug\net8.0\asv-data-folder\plugins\Asv.Drones.Gui.Plugin.Sdr\</OutputPath>
+        <OutputPath>..\..\..\asv-drones\src\Asv.Drones.Gui.Desktop\bin\Debug\net8.0\asv-data-folder\plugins\Asv.Drones.Gui.Plugin.Sdr\</OutputPath>
     </PropertyGroup>
 
     <ItemGroup>
